@@ -47,16 +47,50 @@ struct
    * 6.1. SHA-224 and SHA-256 Initialization
    *)
   fun init () : t =
-    H ( 0wx6a09e667
-      , 0wxbb67ae85
-      , 0wx3c6ef372
-      , 0wxa54ff53a
-      , 0wx510e527f
-      , 0wx9b05688c
-      , 0wx1f83d9ab
-      , 0wx5be0cd19
+    H ( 0wx6a09e667 (* H(0)0 *)
+      , 0wxbb67ae85 (* H(0)1 *)
+      , 0wx3c6ef372 (* H(0)2 *)
+      , 0wxa54ff53a (* H(0)3 *)
+      , 0wx510e527f (* H(0)4 *)
+      , 0wx9b05688c (* H(0)5 *)
+      , 0wx1f83d9ab (* H(0)6 *)
+      , 0wx5be0cd19 (* H(0)7 *)
       )
 end
+
+structure Block512 =
+struct
+  (* 16 32-bit words => 512bit block *)
+  datatype t = Block of Word32.word vector
+
+  exception WrongLength of Word32.word vector
+
+  fun fromVector vec =
+    if Vector.length vec = 16 then
+      Block vec
+    else
+      raise WrongLength vec
+
+  fun bind  NONE    _ = NONE
+    | bind (SOME x) f = f x
+
+  type ('a,'b) reader = ('a, 'b) StringCvt.reader
+
+  fun seqN (get:('a,'b) reader) n : ('a list, 'b) reader =
+    if n = 0 then (fn ss => SOME([], ss))
+    else
+      fn ss =>
+        bind (get ss)            (fn (x ,ss) =>
+        bind (seqN get (n-1) ss) (fn (xs,ss) =>
+        SOME(x::xs,ss)))
+
+  fun scan (get: (Word32.word,'a) StringCvt.reader) : (t,'a) StringCvt.reader =
+    fn ss =>
+      Option.map
+          (fn(xs,ss)=> (Block (vector xs),ss))
+          (seqN get 16 ss)
+end
+
 
 structure ToWord8Tuple =
 struct
@@ -122,6 +156,96 @@ struct
                         hash : word vector
                       }
 
+   (**
+    * 3.  Operations on Words
+    *
+    * The following logical operators will be applied to words in all four
+    * hash operations specified herein.  SHA-224 and SHA-256 operate on
+    * 32-bit words while SHA-384 and SHA-512 operate on 64-bit words.
+    *
+    * In the operations below, x<<n is obtained as follows: discard the
+    * leftmost n bits of x and then pad the result with n zeroed bits on
+    * the right (the result will still be the same number of bits).
+    * Similarly, x>>n is obtained as follows: discard the rightmost n bits
+    * of x and then prepend the result with n zeroed bits on the left (the
+    * result will still be the same number of bits).
+    *)
+  structure Ops =
+  struct
+    infix >>
+    infix <<
+    val op>> = Word32.>>
+    val op<< = Word32.<<
+    val w = Word.fromInt Word32.wordSize
+
+    (**
+     * a. Bitwise logical word operations
+     *       X AND Y  =  bitwise logical "and" of  X and Y.
+     *)
+    fun AND (x,y) = Word32.andb (x, y)
+    (*       X OR Y   =  bitwise logical "inclusive-or" of X and Y. *)
+    fun OR  (x,y) = Word32.orb (x, y)
+    (*       X XOR Y  =  bitwise logical "exclusive-or" of X and Y. *)
+    fun XOR (x,y) = Word32.xorb (x, y)
+    (*       NOT X    =  bitwise logical "complement" of X.  *)
+    fun NOT x = Word32.notb x
+
+    infix 2 AND
+    infix 1 OR XOR
+
+    (**
+     * c. The right shift operation SHR^n(x), where x is a w-bit word and n
+     * is an integer with 0 <= n < w, is defined by
+     *    SHR^n(x) = x>>n
+     *)
+    fun SHR n x =
+      let val n = Word.fromInt n in
+        x >> n
+      end
+
+    (**
+     * d. The rotate right (circular right shift) operation ROTR^n(x), where
+     *    x is a w-bit word and n is an integer with 0 <= n < w, is defined
+     *    by
+     *       ROTR^n(x) = (x>>n) OR (x<<(w-n))
+     *)
+    fun ROTR n x =
+      let val n = Word.fromInt n in
+        (x >> n) OR (x << (w-n))
+      end
+  end
+
+  open Ops
+  infix 2 AND
+  infix 1 OR XOR
+
+  (**
+   * 5.  Functions and Constants Used
+   *
+   * SHA-224 and SHA-256 use six logical functions, where each function
+   * operates on 32-bit words, which are represented as x, y, and z.  The
+   * result of each function is a new 32-bit word.
+   *)
+  structure Functions =
+  struct
+    fun CH (x, y, z) =
+      (x AND y) XOR ((NOT x) AND z)
+
+    fun MAJ (x, y, z) =
+      (x AND y) XOR (x AND z) XOR (y AND z)
+
+    fun BSIG0 x = (ROTR 2  x) XOR (ROTR 13 x) XOR (ROTR 22 x)
+    fun BSIG1 x = (ROTR 6  x) XOR (ROTR 11 x) XOR (ROTR 25 x)
+    fun SSIG0 x = (ROTR 7  x) XOR (ROTR 18 x) XOR (SHR  3  x)
+    fun SSIG1 x = (ROTR 17 x) XOR (ROTR 19 x) XOR (SHR  10 x)
+  end
+
+  (**
+   * 4.1.  SHA-224 and SHA-256
+   *
+   * Suppose a message has length L < 2^64.  Before it is input to the
+   * hash function, the message is padded on the right as follows:
+   *)
   fun padd ws =
     let
       val L = Vector.length ws * 8
@@ -181,16 +305,48 @@ struct
       unfoldr VectorSlice.getItem (VectorSlice.full vec)
     end
 
-  fun process ws =
+  fun for i cond step body =
     let
+      fun for' i =
+        if cond i then 
+          (body i;
+           for' (step i))
+        else
+          ()
+    in
+      for' i
+    end
+
+  fun for' i cond =
+    for i cond (fn i=>i+1)
+
+  fun process (ws:Block512.t list) =
+    let
+      infix :==
+      fun (arr,n) :== v =
+        Array.update(arr,n,v)
+
+        (*
+      val Wt: Word32.word array = Array.array(64, 0w0)
+      *)
+    in
+      (*
+      for' 1 (fn i=> i<=N) (fn i=>
+        for' 0 (fn t=> t<=15) (fn t=>
+          (Wt,t) :== sub(M,i)
+        );
+      )
+      *)
+      (*
       val Wt = Vector.tabulate(64, fn t=>
         if t <= 15 then
           List.nth(ws, t)
         else
           SSIG1(W(t-2)) + W(t-7) + SSIG0(w(t-15)) + W(t-16)
       )
-      val Wt1 = Vector.tabulate(, fn i=> )
-    in
+      val Wt1 = () (* Vector.tabulate(, fn i=> ()) *)
+      *)
+      ()
     end
 
 end
