@@ -407,13 +407,45 @@ struct
       go 0 (VectorSlice.full W)
     end
 
+  local
+    infix :==
+    fun (arr,n) :== v =
+      Array.update(arr,n,v)
+
+    fun unfoldr f e =
+      case f e
+        of NONE => []
+         | SOME(x,e) => x::unfoldr f e
+
+    fun unfoldri f i e =
+      let
+        fun go i e =
+          case f i e
+            of NONE => []
+             | SOME(x,e) => x::go (i+1) e
+      in
+        go 0 e
+      end
+  in
+
+  (** Prepare the message schedule W *)
+  fun scheduleW M =
+    let
+      val sub = Array.sub
+      val W : Word32.word array = Array.array(64, 0w0)
+    in
+      for' 0 (fn t=> t<=15) (fn t=>
+        (W,t) :== B.sub(M,t));
+
+      for' 16 (fn t=> t<=63) (fn t=>
+        (W,t) :== SSIG1(sub(W,t-2)) + sub(W,t-7) + SSIG0(sub(W,t-15)) + sub(W,t-16));
+
+      Array.vector W
+    end
+
   (* 6.2.  SHA-224 and SHA-256 Processing *)
   fun process (Ms:Block512.t vector) =
     let
-      infix :==
-      fun (arr,n) :== v =
-        Array.update(arr,n,v)
-
       val N = Vector.length Ms
       val W : Word32.word array = Array.array(64, 0w0)
       val H = ref (Sha256Quantity.init())
@@ -421,19 +453,9 @@ struct
       for' 0 (fn i=> i<N) (fn i=> (
         print_h(!H); print "\n";
         (** Prepare the message schedule W *)
-        let
-          val M = Vector.sub(Ms, i)
-          val sub = Array.sub
-        in
-          for' 0 (fn t=> t<=15) (fn t=>
-            (W,t) :== B.sub(M,t));
-
-          for' 16 (fn t=> t<=63) (fn t=>
-            (W,t) :== SSIG1(sub(W,t-2)) + sub(W,t-7) + SSIG0(sub(W,t-15)) + sub(W,t-16));
-
         (** 2. Initialize the working variables: *)
         let
-          val W = Array.vector W
+          val W = scheduleW (Vector.sub(Ms, i))
           val sub = Vector.sub
           val tup = ref (Sha256Quantity.toTuple (!H))
         in
@@ -468,12 +490,12 @@ struct
           end;
           !H
         end
-        end
       ));
       print_h(!H); print "\n";
       !H
     end
   end
+  end (* local *)
 
   fun hash w8s =
     let
