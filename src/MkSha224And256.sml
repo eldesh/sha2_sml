@@ -34,7 +34,7 @@ in
       Hash ( 0wx6a09e667, 0wxbb67ae85, 0wx3c6ef372, 0wxa54ff53a
            , 0wx510e527f, 0wx9b05688c, 0wx1f83d9ab, 0wx5be0cd19 )
     else
-      raise Fail "unknown algorithm except SHA224, SHA256"
+      raise Fail "unknown algorithm expect SHA224 or SHA256"
 
   (**
    * 4.1.  SHA-224 and SHA-256
