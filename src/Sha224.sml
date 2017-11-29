@@ -123,16 +123,6 @@ struct
       split' (VectorSlice.full ss)
     end
 
-  fun list vec =
-    let
-      fun unfoldr f e =
-        case f e
-          of NONE => []
-           | SOME(x,e) => x::unfoldr f e
-    in
-      unfoldr VectorSlice.getItem (VectorSlice.full vec)
-    end
-
   fun for i cond step body =
     let
       fun for' i =
