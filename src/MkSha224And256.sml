@@ -129,29 +129,23 @@ in
       Hash (T1+T2,a,b,c,d+T1,e,f,g)
     end
 
+  fun process_block (M,H) =
+    let
+      val _ = print(toString H ^ "\n")
+      val W = scheduleW M
+      val Hash (a,b,c,d,e,f,g,h) = foldNat (compute W) H 64
+      val Hash H1 = H
+    in
+      (** 4. Compute the intermediate hash value H(i) *)
+      Hash ( a + #1 H1, b + #2 H1, c + #3 H1, d + #4 H1
+           , e + #5 H1, f + #6 H1, g + #7 H1, h + #8 H1 )
+    end
+
   (* 6.2.  SHA-224 and SHA-256 Processing *)
   fun process (Ms:Block512.t list) =
-    let
-      val sub = Vector.sub
-    in
-      foldli
-        (fn (i,M,H)=>
-         let
-           (** Prepare the message schedule W *)
-           val W = scheduleW M
-           val _ = print(toString H ^ "\n")
-           val Hash (a,b,c,d,e,f,g,h) = foldNat (compute W) H 64
-           val Hash H1 = H
-         in
-           (** 4. Compute the intermediate hash value H(i) *)
-           Hash ( a + #1 H1, b + #2 H1, c + #3 H1, d + #4 H1
-                , e + #5 H1, f + #6 H1, g + #7 H1, h + #8 H1 )
-         end)
-        H0
-        Ms
-    end
-  end (* local *)
+    foldl process_block H0 Ms
 
+  end (* local *)
 
   fun hash w8s =
     let
@@ -167,7 +161,7 @@ in
           of Hash (H0,H1,H2,H3,H4,H5,H6,H7) => [H0,H1,H2,H3,H4,H5,H6]
       else if bit = 256 then
         case process (go w32s)
-          of Hash (H0,H1,H2,H3,H4,H5,H6,H7) => [H0,H1,H2,H3,H4,H5,H6]
+          of Hash (H0,H1,H2,H3,H4,H5,H6,H7) => [H0,H1,H2,H3,H4,H5,H6,H7]
       else
         raise Fail "unknown algorithm expect SHA224 or SHA256"
     end
