@@ -4,5 +4,7 @@ is
   ToWord8Tuple.sml
   ToWord8List.sml
   Block512.sml
+  Sha224And256Func.sml
+  Sha224And256Ops.sml
   Sha224.sml
   Sha256.sml
