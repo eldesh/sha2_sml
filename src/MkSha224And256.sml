@@ -57,7 +57,7 @@ in
       ]
     end
 
-  fun split ss =
+  fun split (ss: word8 vector) : word list =
     let
       val conv = Word32.fromInt o Word8.toInt
       val get = VectorSlice.getItem
