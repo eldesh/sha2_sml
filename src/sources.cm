@@ -1,4 +1,8 @@
 group
 is
   $/basis-2004.cm
-  sha2.sml
+  ToWord8Tuple.sml
+  ToWord8List.sml
+  Block512.sml
+  Sha224.sml
+  Sha256.sml

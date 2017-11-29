@@ -11,32 +11,6 @@ end
 (**
  * hash quantity H(N)
  *)
-structure Sha224Quantity =
-struct
-  type word = Word32.word
-  datatype t = H of word * word * word * word
-                  * word * word * word * word
-
-  (**
-   * 6.1. SHA-224 and SHA-256 Initialization
-   *)
-  fun init () : t =
-    H ( 0wxc1059ed8
-      , 0wx367cd507
-      , 0wx3070dd17
-      , 0wxf70e5939
-      , 0wxffc00b31
-      , 0wx68581511
-      , 0wx64f98fa7
-      , 0wxbefa4fa4
-      )
-end
-
-
-
-(**
- * hash quantity H(N)
- *)
 structure Sha256Quantity =
 struct
   type word = Word32.word
@@ -68,96 +42,6 @@ struct
       , 0wx1f83d9ab (* H(0)6 *)
       , 0wx5be0cd19 (* H(0)7 *)
       )
-end
-
-structure Block512 =
-struct
-  (* 16 32-bit words => 512bit block *)
-  datatype t = Block of Word32.word vector
-
-  exception WrongLength of Word32.word vector
-
-  fun toVector (Block vec) = vec
-
-  fun fromVector vec =
-    if Vector.length vec = 16 then
-      Block vec
-    else
-      raise WrongLength vec
-
-  fun sub (Block vec, n) = Vector.sub(vec, n)
-
-  fun bind  NONE    _ = NONE
-    | bind (SOME x) f = f x
-
-  type ('a,'b) reader = ('a, 'b) StringCvt.reader
-
-  fun seqN (get:('a,'b) reader) n : ('a list, 'b) reader =
-    if n = 0 then (fn ss => SOME([], ss))
-    else
-      fn ss =>
-        bind (get ss)            (fn (x ,ss) =>
-        bind (seqN get (n-1) ss) (fn (xs,ss) =>
-        SOME(x::xs,ss)))
-
-  fun scan (get: (Word32.word,'a) StringCvt.reader) : (t,'a) StringCvt.reader =
-    fn ss =>
-      Option.map
-          (fn(xs,ss)=> (Block (vector xs),ss))
-          (seqN get 16 ss)
-end
-
-
-structure ToWord8Tuple =
-struct
-  (*
-  fun fromWord16 w16 =
-    let val conv = Word8.fromInt o Word16.toInt in
-      ( conv (Word16.>> (Word16.andb (w16, 0wxff00), 0w8))
-      , conv (Word16.>> (Word16.andb (w16, 0wx00ff), 0w0)))
-    end
-    *)
-  
-  fun fromWord32 w32 =
-    let val conv = Word8.fromInt o Word32.toInt in
-      ( conv (Word32.>> (Word32.andb (w32, 0wxff000000), 0w24))
-      , conv (Word32.>> (Word32.andb (w32, 0wx00ff0000), 0w16))
-      , conv (Word32.>> (Word32.andb (w32, 0wx0000ff00), 0w08))
-      , conv (Word32.>> (Word32.andb (w32, 0wx000000ff), 0w00)))
-    end
-  
-  fun fromWord64 w64 =
-    let val conv = Word8.fromInt o Word64.toInt in
-      ( conv (Word64.>> (Word64.andb (w64, 0wxff00000000000000), 0w56))
-      , conv (Word64.>> (Word64.andb (w64, 0wx00ff000000000000), 0w48))
-      , conv (Word64.>> (Word64.andb (w64, 0wx0000ff0000000000), 0w40))
-      , conv (Word64.>> (Word64.andb (w64, 0wx000000ff00000000), 0w32))
-      , conv (Word64.>> (Word64.andb (w64, 0wx00000000ff000000), 0w24))
-      , conv (Word64.>> (Word64.andb (w64, 0wx0000000000ff0000), 0w16))
-      , conv (Word64.>> (Word64.andb (w64, 0wx000000000000ff00), 0w08))
-      , conv (Word64.>> (Word64.andb (w64, 0wx00000000000000ff), 0w00)))
-    end
-end
-
-structure ToWord8List =
-struct
-  structure T = ToWord8Tuple
-  (*
-  fun fromWord16 w16 =
-    let val (wh, wl) = T.fromWord16 w16 in
-      [wh, wl]
-    end
-    *)
-
-  fun fromWord32 w32 =
-    let val (w3, w2, w1, w0) = T.fromWord32 w32 in
-      [w3, w2, w1, w0]
-    end
-
-  fun fromWord64 w64 =
-    let val (w7, w6, w5, w4, w3, w2, w1, w0) = T.fromWord64 w64 in
-      [w7, w6, w5, w4, w3, w2, w1, w0]
-    end
 end
 
 structure Sha256 =
@@ -498,10 +382,5 @@ struct
     in
       process (go w32s)
     end
-end
-
-
-structure Sha2 =
-struct
 end
 
