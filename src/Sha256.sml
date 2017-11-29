@@ -56,11 +56,6 @@ struct
                         hash : word vector
                       }
 
-  structure Ops = Sha224And256Ops
-  open Ops
-  infix 2 AND
-  infix 1 OR XOR
-
   structure Functions = Sha224And256Func
   open Functions
 

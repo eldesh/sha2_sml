@@ -1,6 +1,7 @@
 group
 is
   $/basis-2004.cm
+  ForLoop.sml
   ToWord8Tuple.sml
   ToWord8List.sml
   Block512.sml
@@ -8,3 +9,4 @@ is
   Sha224And256Ops.sml
   Sha224.sml
   Sha256.sml
+  MkSha224And256.sml
