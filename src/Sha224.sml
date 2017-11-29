@@ -1,3 +1,3 @@
 
-structure Sha224 = MkSha224And256(bit = 224);
+structure Sha224 = MkSha224And256(val bit = 224);
 

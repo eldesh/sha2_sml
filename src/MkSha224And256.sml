@@ -15,6 +15,8 @@ in
   structure Word = Word32
   type word = Word.word
 
+  val bit = bit
+
   datatype t = Hash of word * word * word * word
                      * word * word * word * word
 
@@ -57,7 +59,7 @@ in
       ]
     end
 
-  fun split (ss: word8 vector) : word list =
+  fun split (ss: Word8.word vector) : word list =
     let
       val conv = Word32.fromInt o Word8.toInt
       val get = VectorSlice.getItem
@@ -117,6 +119,16 @@ in
       go 0
     end
 
+  (** 3. Perform the main hash computation: *)
+  fun compute W (t, Hash(a,b,c,d,e,f,g,h)) =
+    let
+      val sub = Vector.sub
+      val T1 = h + BSIG1 e + CH(e,f,g) + sub(K,t) + sub(W,t)
+      val T2 = BSIG0 a + MAJ(a,b,c)
+    in
+      Hash (T1+T2,a,b,c,d+T1,e,f,g)
+    end
+
   (* 6.2.  SHA-224 and SHA-256 Processing *)
   fun process (Ms:Block512.t list) =
     let
@@ -128,20 +140,8 @@ in
            (** Prepare the message schedule W *)
            val W = scheduleW M
            val _ = print(toString H ^ "\n")
-           val Hash (a,b,c,d,e,f,g,h) =
-             foldNat
-               (** 2. Initialize the working variables: *)
-               (fn (t,H as Hash(a,b,c,d,e,f,g,h))=>
-                let
-                  (** 3. Perform the main hash computation: *)
-                  val T1 = h + BSIG1 e + CH(e,f,g) + sub(K,t) + sub(W,t)
-                  val T2 = BSIG0 a + MAJ(a,b,c)
-                in
-                  Hash(T1+T2,a,b,c,d+T1,e,f,g)
-                end)
-               H
-               64
-            val Hash H1 = H
+           val Hash (a,b,c,d,e,f,g,h) = foldNat (compute W) H 64
+           val Hash H1 = H
          in
            (** 4. Compute the intermediate hash value H(i) *)
            Hash ( a + #1 H1, b + #2 H1, c + #3 H1, d + #4 H1
@@ -152,6 +152,7 @@ in
     end
   end (* local *)
 
+
   fun hash w8s =
     let
       val pw8s = padding w8s
@@ -161,7 +162,14 @@ in
           of NONE => []
            | SOME(b,ss) => b::go ss
     in
-      process (go w32s)
+      if bit = 224 then
+        case process (go w32s)
+          of Hash (H0,H1,H2,H3,H4,H5,H6,H7) => [H0,H1,H2,H3,H4,H5,H6]
+      else if bit = 256 then
+        case process (go w32s)
+          of Hash (H0,H1,H2,H3,H4,H5,H6,H7) => [H0,H1,H2,H3,H4,H5,H6]
+      else
+        raise Fail "unknown algorithm expect SHA224 or SHA256"
     end
 
 end (* local *)
