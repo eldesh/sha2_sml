@@ -412,17 +412,12 @@ struct
     fun (arr,n) :== v =
       Array.update(arr,n,v)
 
-    fun unfoldr f e =
-      case f e
-        of NONE => []
-         | SOME(x,e) => x::unfoldr f e
-
-    fun unfoldri f i e =
+    fun foldNat f e n =
       let
         fun go i e =
-          case f i e
-            of NONE => []
-             | SOME(x,e) => x::go (i+1) e
+          if i = n
+          then e
+          else go (i+1) (f(i,e))
       in
         go 0 e
       end
@@ -446,53 +441,49 @@ struct
   (* 6.2.  SHA-224 and SHA-256 Processing *)
   fun process (Ms:Block512.t vector) =
     let
+      val sub = Vector.sub
       val N = Vector.length Ms
-      val W : Word32.word array = Array.array(64, 0w0)
-      val H = ref (Sha256Quantity.init())
     in
-      for' 0 (fn i=> i<N) (fn i=> (
-        print_h(!H); print "\n";
-        (** Prepare the message schedule W *)
-        (** 2. Initialize the working variables: *)
-        let
-          val W = scheduleW (Vector.sub(Ms, i))
-          val sub = Vector.sub
-          val tup = ref (Sha256Quantity.toTuple (!H))
-        in
-          print_w W; print "\n";
-          (** 3. Perform the main hash computation: *)
-          for' 0 (fn t=>t<=63) (fn t =>
-            let
-              val (a,b,c,d,e,f,g,h) = !tup
-              val T1 = h + BSIG1 e + CH(e,f,g) + sub(K,t) + sub(W,t)
-              val T2 = BSIG0 a + MAJ(a,b,c)
-              val (h,g,f,e,d,c,b,a) = (g,f,e,d+T1,c,b,a,T1+T2)
-            in
-              tup := (a,b,c,d,e,f,g,h);
-              print(concat["t = ", Int.toString t, " "]);
-              print_t (!tup)
-            end
-          );
-          let
-            val H1 = Sha256Quantity.toTuple (!H)
-            val (a,b,c,d,e,f,g,h) = !tup
-          in
-            (** 4. Compute the intermediate hash value H(i) *)
-            H := Sha256Quantity.fromTuple
-                  ( a + #1 H1
-                  , b + #2 H1
-                  , c + #3 H1
-                  , d + #4 H1
-                  , e + #5 H1
-                  , f + #6 H1
-                  , g + #7 H1
-                  , h + #8 H1 )
-          end;
-          !H
-        end
-      ));
-      print_h(!H); print "\n";
-      !H
+      Vector.foldli
+        (fn (i,M,H)=> (
+         let
+           (** Prepare the message schedule W *)
+           val W = scheduleW (Vector.sub(Ms, i))
+           (** 2. Initialize the working variables: *)
+         in
+           print_h H; print "\n";
+           (** 3. Perform the main hash computation: *)
+         let
+           val (a,b,c,d,e,f,g,h) =
+             foldNat
+               (fn (t,H as (a,b,c,d,e,f,g,h))=>
+                let
+                  val T1 = h + BSIG1 e + CH(e,f,g) + sub(K,t) + sub(W,t)
+                  val T2 = BSIG0 a + MAJ(a,b,c)
+                  val (h,g,f,e,d,c,b,a) = (g,f,e,d+T1,c,b,a,T1+T2)
+                in
+                  (a,b,c,d,e,f,g,h)
+                end)
+               (Sha256Quantity.toTuple H)
+               64
+
+            val H1 = Sha256Quantity.toTuple H
+         in
+           (** 4. Compute the intermediate hash value H(i) *)
+           Sha256Quantity.fromTuple
+             ( a + #1 H1
+             , b + #2 H1
+             , c + #3 H1
+             , d + #4 H1
+             , e + #5 H1
+             , f + #6 H1
+             , g + #7 H1
+             , h + #8 H1 )
+         end
+         end
+        ))
+        (Sha256Quantity.init())
+        Ms
     end
   end
   end (* local *)
