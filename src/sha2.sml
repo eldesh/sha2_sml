@@ -431,42 +431,43 @@ struct
     in
       for' 0 (fn t=> t<=15) (fn t=>
         (W,t) :== B.sub(M,t));
-
       for' 16 (fn t=> t<=63) (fn t=>
         (W,t) :== SSIG1(sub(W,t-2)) + sub(W,t-7) + SSIG0(sub(W,t-15)) + sub(W,t-16));
-
       Array.vector W
     end
 
+  fun foldli f =
+    let
+      fun go i e [] = e
+        | go i e (x::xs) = go (i+1) (f(i,x,e)) xs
+    in
+      go 0
+    end
+
   (* 6.2.  SHA-224 and SHA-256 Processing *)
-  fun process (Ms:Block512.t vector) =
+  fun process (Ms:Block512.t list) =
     let
       val sub = Vector.sub
-      val N = Vector.length Ms
     in
-      Vector.foldli
-        (fn (i,M,H)=> (
+      foldli
+        (fn (i,M,H)=>
          let
            (** Prepare the message schedule W *)
-           val W = scheduleW (Vector.sub(Ms, i))
-           (** 2. Initialize the working variables: *)
-         in
-           print_h H; print "\n";
-           (** 3. Perform the main hash computation: *)
-         let
+           val W = scheduleW M
+           val _ = (print_h H; print "\n")
            val (a,b,c,d,e,f,g,h) =
              foldNat
+               (** 2. Initialize the working variables: *)
                (fn (t,H as (a,b,c,d,e,f,g,h))=>
                 let
+                  (** 3. Perform the main hash computation: *)
                   val T1 = h + BSIG1 e + CH(e,f,g) + sub(K,t) + sub(W,t)
                   val T2 = BSIG0 a + MAJ(a,b,c)
-                  val (h,g,f,e,d,c,b,a) = (g,f,e,d+T1,c,b,a,T1+T2)
                 in
-                  (a,b,c,d,e,f,g,h)
+                  (T1+T2,a,b,c,d+T1,e,f,g)
                 end)
                (Sha256Quantity.toTuple H)
                64
-
             val H1 = Sha256Quantity.toTuple H
          in
            (** 4. Compute the intermediate hash value H(i) *)
@@ -479,9 +480,7 @@ struct
              , f + #6 H1
              , g + #7 H1
              , h + #8 H1 )
-         end
-         end
-        ))
+         end)
         (Sha256Quantity.init())
         Ms
     end
@@ -497,9 +496,8 @@ struct
           of NONE => []
            | SOME(b,ss) => b::go ss
     in
-      process (vector (go w32s))
+      process (go w32s)
     end
-
 end
 
 
