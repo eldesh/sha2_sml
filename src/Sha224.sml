@@ -15,6 +15,9 @@ in
   fun scan getw strm =
     R.fmap fromEntity (H.scan getw) strm
 
+  val hash = fromEntity o H.hash
+  val hash_vector = fromEntity o H.hash_vector
+
 end (* local *)
 end
 

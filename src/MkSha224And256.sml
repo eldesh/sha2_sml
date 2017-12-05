@@ -47,9 +47,6 @@ in
    *)
 
   (**
-   * a. "1" is appended.  Example: if the original message is "01010000",
-   *    this is padded to "010100001".
-   *
    * b. K "0"s are appended where K is the smallest, non-negative solution
    *    to the equation
    *
@@ -60,57 +57,9 @@ in
     then 448 - ((L + 1) mod 512)
     else 512 - ((L + 1) mod 512) + 448
 
-  fun padding ws =
-    let
-      val L = Vector.length ws * 8
-      val K = getK L
-    in
-      Vector.concat
-      [ ws
-      , Vector.fromList [0wx80] (* append "1" *)
-      , Vector.tabulate(K div 8, fn _=> 0w0)
-      , Vector.fromList(ToWord8List.fromWord64 (Word64.fromInt L))
-      ]
-    end
-
-  fun split (ss: Word8.word vector) : word list =
-    let
-      val conv = Word32.fromInt o Word8.toInt
-      val get = VectorSlice.getItem
-      fun split' ss =
-        case (bind (get ss) (fn (w3,ss) =>
-              bind (get ss) (fn (w2,ss) =>
-              bind (get ss) (fn (w1,ss) =>
-              bind (get ss) (fn (w0,ss) =>
-              SOME((w3,w2,w1,w0),ss))))))
-          of NONE => []
-           | SOME((w3,w2,w1,w0),ss) =>
-              foldl Word32.orb 0w0 [
-                Word32.<< (conv w3, 0w24),
-                Word32.<< (conv w2, 0w16),
-                Word32.<< (conv w1, 0w08),
-                Word32.<< (conv w0, 0w00)
-              ]
-              :: split' ss
-    in
-      split' (VectorSlice.full ss)
-    end
-
-  local
-    infix :==
-    fun (arr,n) :== v =
-      Array.update(arr,n,v)
-
-    fun foldNat f e n =
-      let
-        fun go i e =
-          if i = n
-          then e
-          else go (i+1) (f(i,e))
-      in
-        go 0 e
-      end
-  in
+  infix :==
+  fun (arr,n) :== v =
+    Array.update(arr,n,v)
 
   (** Prepare the message schedule W *)
   fun scheduleW M =
@@ -135,6 +84,18 @@ in
       Hash (T1+T2,a,b,c,d+T1,e,f,g)
     end
 
+  (* fold on Nat sequence from 0 to n *)
+  fun foldNat f e n =
+    let
+      fun go i e =
+        if i = n
+        then e
+        else go (i+1) (f(i,e))
+    in
+      go 0 e
+    end
+
+  (* compute hash for a 512bit block *)
   fun process_block (M,H) =
     let
       val _ = print(toString H ^ "\n")
@@ -150,13 +111,13 @@ in
   fun repeatN 0 _ = []
     | repeatN n x = x::repeatN (n-1) x
 
-  fun mkgetw32 getw8 ss =
+  fun scanWord32 getWord8 ss =
     let
       infix <<
       val op<< = Word32.<<
       val toWord32 = Word32.fromInt o Word8.toInt
     in
-      case R.fmap (map toWord32) (R.seqN getw8 4) ss
+      case R.fmap (map toWord32) (R.seqN getWord8 4) ss
         of SOME([w3,w2,w1,w0],ss) =>
              SOME(foldl Word32.orb 0w0
                   [ w3<<0w24, w2<<0w16, w1<<0w08, w0<<0w00], ss)
@@ -166,7 +127,7 @@ in
   (* process tail of the entity stream and padding words *)
   fun process_tail n ws H =
     let
-      val getw32 = mkgetw32 List.getItem
+      val scanWord32 = scanWord32 List.getItem
       val L = (length ws + n*4) * 8
       val K = getK L
       val ws = List.concat [
@@ -176,7 +137,7 @@ in
                , ToWord8List.fromWord64 (Word64.fromInt L)
                ]
       fun go H ss =
-        case Blk.scan getw32 ss
+        case Blk.scan scanWord32 ss
           of SOME(M,ss) => go (process_block (M,H)) ss
            | NONE       => H
     in
@@ -184,14 +145,11 @@ in
     end
 
   (* 6.2.  SHA-224 and SHA-256 Processing *)
-  fun process (Ms:Block512.t list) =
-    foldl process_block H0 Ms
-
   fun scan getw8 =
     let
-      val getw32 = mkgetw32 getw8
+      val scanWord32 = scanWord32 getw8
       fun go n H ss =
-        case Blk.scan getw32 ss
+        case Blk.scan scanWord32 ss
           of SOME(M,ss) => go (n+1) (process_block (M,H)) ss
            | NONE       =>
                let val SOME(ws,ss) = R.read_all getw8 ss in
@@ -201,25 +159,20 @@ in
       go 0 H0
     end
 
-  end (* local *)
+  fun hash str =
+    let val getWord8 = R.fmap (Word8.fromInt o Char.ord) Substring.getc in
+      (#1 o valOf) (scan getWord8 (Substring.full str))
+    end
 
-  fun hash w8s =
-    let
-      val pw8s = padding w8s
-      val w32s = split pw8s
-      fun go ss =
-        case Block512.scan List.getItem ss
-          of NONE => []
-           | SOME(b,ss) => b::go ss
-    in
-      case process (go w32s)
-        of Hash (H0,H1,H2,H3,H4,H5,H6,H7) =>
-           if bit = 224 then
-             [H0,H1,H2,H3,H4,H5,H6]
-           else if bit = 256 then
-             [H0,H1,H2,H3,H4,H5,H6,H7]
-           else
-             raise Fail "unknown algorithm expect SHA224 or SHA256"
+  fun hash_vector vector =
+    (#1 o valOf) (scan VectorSlice.getItem (VectorSlice.full vector))
+
+  fun hash_bin_stream strm =
+    (#1 o valOf) (scan BinIO.StreamIO.input1 strm)
+
+  fun hash_text_stream strm =
+    let val getWord8 = R.fmap (Word8.fromInt o Char.ord) TextIO.StreamIO.input1 in
+      (#1 o valOf) (scan getWord8 strm)
     end
 
 end (* local *)
