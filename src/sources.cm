@@ -4,6 +4,7 @@ is
   ForLoop.sml
   ToWord8Tuple.sml
   ToWord8List.sml
+  Reader.sml
   Block512.sml
   Sha224And256Func.sml
   Sha224And256Ops.sml

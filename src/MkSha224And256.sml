@@ -7,6 +7,7 @@ local
   structure For = ForLoop
   open For
 
+  structure R = Reader
   structure Blk = Block512
 
   fun bind  NONE    _ = NONE
@@ -44,12 +45,25 @@ in
    * Suppose a message has length L < 2^64.  Before it is input to the
    * hash function, the message is padded on the right as follows:
    *)
+
+  (**
+   * a. "1" is appended.  Example: if the original message is "01010000",
+   *    this is padded to "010100001".
+   *
+   * b. K "0"s are appended where K is the smallest, non-negative solution
+   *    to the equation
+   *
+   *       ( L + 1 + K ) mod 512 = 448
+   *)
+  fun getK L =
+    if (L + 1) mod 512 <= 448
+    then 448 - ((L + 1) mod 512)
+    else 512 - ((L + 1) mod 512) + 448
+
   fun padding ws =
     let
       val L = Vector.length ws * 8
-      val K = if (L + 1) mod 512 <= 448
-              then 448 - ((L + 1) mod 512)
-              else 512 - ((L + 1) mod 512) + 448
+      val K = getK L
     in
       Vector.concat
       [ ws
@@ -111,14 +125,6 @@ in
       Array.vector W
     end
 
-  fun foldli f =
-    let
-      fun go i e [] = e
-        | go i e (x::xs) = go (i+1) (f(i,x,e)) xs
-    in
-      go 0
-    end
-
   (** 3. Perform the main hash computation: *)
   fun compute W (t, Hash(a,b,c,d,e,f,g,h)) =
     let
@@ -141,9 +147,59 @@ in
            , e + #5 H1, f + #6 H1, g + #7 H1, h + #8 H1 )
     end
 
+  fun repeatN 0 _ = []
+    | repeatN n x = x::repeatN (n-1) x
+
+  fun mkgetw32 getw8 ss =
+    let
+      infix <<
+      val op<< = Word32.<<
+      val toWord32 = Word32.fromInt o Word8.toInt
+    in
+      case R.fmap (map toWord32) (R.seqN getw8 4) ss
+        of SOME([w3,w2,w1,w0],ss) =>
+             SOME(foldl Word32.orb 0w0
+                  [ w3<<0w24, w2<<0w16, w1<<0w08, w0<<0w00], ss)
+         | NONE => NONE
+    end
+
+  (* process tail of the entity stream and padding words *)
+  fun process_tail n ws H =
+    let
+      val getw32 = mkgetw32 List.getItem
+      val L = (length ws + n*4) * 8
+      val K = getK L
+      val ws = List.concat [
+                 ws
+               , [0wx80] (* append "1" *)
+               , repeatN (K div 8) 0w0
+               , ToWord8List.fromWord64 (Word64.fromInt L)
+               ]
+      fun go H ss =
+        case Blk.scan getw32 ss
+          of SOME(M,ss) => go (process_block (M,H)) ss
+           | NONE       => H
+    in
+      go H ws
+    end
+
   (* 6.2.  SHA-224 and SHA-256 Processing *)
   fun process (Ms:Block512.t list) =
     foldl process_block H0 Ms
+
+  fun scan getw8 =
+    let
+      val getw32 = mkgetw32 getw8
+      fun go n H ss =
+        case Blk.scan getw32 ss
+          of SOME(M,ss) => go (n+1) (process_block (M,H)) ss
+           | NONE       =>
+               let val SOME(ws,ss) = R.read_all getw8 ss in
+                 SOME(process_tail n ws H, ss)
+               end
+    in
+      go 0 H0
+    end
 
   end (* local *)
 
@@ -156,14 +212,14 @@ in
           of NONE => []
            | SOME(b,ss) => b::go ss
     in
-      if bit = 224 then
-        case process (go w32s)
-          of Hash (H0,H1,H2,H3,H4,H5,H6,H7) => [H0,H1,H2,H3,H4,H5,H6]
-      else if bit = 256 then
-        case process (go w32s)
-          of Hash (H0,H1,H2,H3,H4,H5,H6,H7) => [H0,H1,H2,H3,H4,H5,H6,H7]
-      else
-        raise Fail "unknown algorithm expect SHA224 or SHA256"
+      case process (go w32s)
+        of Hash (H0,H1,H2,H3,H4,H5,H6,H7) =>
+           if bit = 224 then
+             [H0,H1,H2,H3,H4,H5,H6]
+           else if bit = 256 then
+             [H0,H1,H2,H3,H4,H5,H6,H7]
+           else
+             raise Fail "unknown algorithm expect SHA224 or SHA256"
     end
 
 end (* local *)
