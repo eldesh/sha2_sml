@@ -2,7 +2,7 @@
 structure Sha256 =
 struct
 local
-  structure H = MkSha224And256(val bit = 256)
+  structure H = MkSha224And256(Sha256Init)
   structure R = Reader
 in
   datatype t = datatype H.t

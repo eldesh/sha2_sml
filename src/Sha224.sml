@@ -2,7 +2,7 @@
 structure Sha224 =
 struct
 local
-  structure H = MkSha224And256(val bit = 224)
+  structure H = MkSha224And256(Sha224Init)
   structure R = Reader
 in
 

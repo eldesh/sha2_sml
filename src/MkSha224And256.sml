@@ -1,5 +1,5 @@
 
-functor MkSha224And256(val bit : int) =
+functor MkSha224And256 (S : sig val H0 : Sha2Type.t end) =
 struct
 local
   structure Functions = Sha224And256Func
@@ -13,31 +13,15 @@ local
   fun bind  NONE    _ = NONE
     | bind (SOME x) f = f x
 in
-  structure Word = Word32
-  type word = Word.word
-
-  val bit = bit
-
-  datatype t = Hash of word * word * word * word
-                     * word * word * word * word
-
+  open Sha2Type
 
   fun toString (Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
     String.concatWith "\n" (map Word.toString [h0,h1,h2,h3,h4,h5,h6,h7])
 
-
   (**
    * 6.1. SHA-224 and SHA-256 Initialization
    *)
-  val H0 =
-    if bit = 224 then
-      Hash ( 0wxc1059ed8, 0wx367cd507, 0wx3070dd17, 0wxf70e5939
-           , 0wxffc00b31, 0wx68581511, 0wx64f98fa7, 0wxbefa4fa4 )
-    else if bit = 256 then
-      Hash ( 0wx6a09e667, 0wxbb67ae85, 0wx3c6ef372, 0wxa54ff53a
-           , 0wx510e527f, 0wx9b05688c, 0wx1f83d9ab, 0wx5be0cd19 )
-    else
-      raise Fail "unknown algorithm expect SHA224 or SHA256"
+  val H0 = S.H0
 
   (**
    * 4.1.  SHA-224 and SHA-256

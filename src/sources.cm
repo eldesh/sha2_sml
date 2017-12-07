@@ -6,6 +6,9 @@ is
   ToWord8List.sml
   Reader.sml
   Block512.sml
+  Sha2Type.sml
+  Sha224Init.sml
+  Sha256Init.sml
   Sha224And256Func.sml
   Sha224And256Ops.sml
   Sha224.sml
