@@ -2,7 +2,7 @@
 SHA2 - StandardML
 ================================================================
 
-A [SHA2]_ implementation with StandardML.
+A [SHA2]_ implementation of StandardML.
 
 
 

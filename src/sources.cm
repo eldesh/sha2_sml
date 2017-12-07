@@ -6,11 +6,14 @@ is
   ToWord8List.sml
   Reader.sml
   Block512.sml
+  SHA2TYPE.sig
   Sha2Type.sml
   Sha224Init.sml
   Sha256Init.sml
   Sha224And256Func.sml
   Sha224And256Ops.sml
+  SHA224AND256CORE.sig
+  Sha224And256Core.sml
   Sha224.sml
   Sha256.sml
   MkSha224And256.sml

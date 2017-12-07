@@ -2,22 +2,23 @@
 structure Sha224 =
 struct
 local
-  structure H = MkSha224And256(Sha224Init)
-  structure R = Reader
+  structure T = Sha2Type
+  structure C = Sha224And256Core(Sha224Init)
+
+  datatype h = Hash of T.Word.word * T.Word.word * T.Word.word * T.Word.word
+                     * T.Word.word * T.Word.word * T.Word.word
+
+  fun fromEntity (T.Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
+    Hash(h0,h1,h2,h3,h4,h5,h6)
+
+  structure H = MkSha224And256(
+  struct
+    open C
+    type t = h
+    fun scan getw = Reader.fmap fromEntity (C.scan getw)
+  end)
 in
-
-  datatype t = Hash of H.word * H.word * H.word * H.word
-                     * H.word * H.word * H.word
-
-  fun fromEntity (H.Hash(a,b,c,d,e,f,g,_)) =
-    Hash(a,b,c,d,e,f,g)
-
-  fun scan getw strm =
-    R.fmap fromEntity (H.scan getw) strm
-
-  val hash = fromEntity o H.hash
-  val hash_vector = fromEntity o H.hash_vector
-
-end (* local *)
+  open H
+end
 end
 

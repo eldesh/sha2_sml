@@ -2,19 +2,10 @@
 structure Sha256 =
 struct
 local
-  structure H = MkSha224And256(Sha256Init)
-  structure R = Reader
+  structure C = Sha224And256Core(Sha256Init)
+  structure H = MkSha224And256(C)
 in
-  datatype t = datatype H.t
-
-  fun fromEntity h = h
-
-  fun scan getw strm =
-    R.fmap fromEntity (H.scan getw) strm
-
-  val hash = H.hash
-  val hash_vector = H.hash_vector
-
-end (* local *)
+  open H
+end
 end
 
