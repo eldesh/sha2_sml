@@ -27,9 +27,8 @@ struct
         case get ss
           of SOME(x,ss) =>
               (case go ss
-                 of SOME(xs,ss) => SOME(x::xs,ss)
-                  | NONE        => SOME(x::[],ss))
-           | NONE => SOME([],ss)
+                 of (xs,ss) => (x::xs,ss))
+           | NONE => ([],ss)
     in go
     end
 

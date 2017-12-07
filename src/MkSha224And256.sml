@@ -10,8 +10,15 @@ local
   structure R = Reader
   structure Blk = Block512
 
-  fun bind  NONE    _ = NONE
-    | bind (SOME x) f = f x
+  (* fold on Nat sequence from 0 to n *)
+  fun foldNat f e n =
+    let
+      fun go i e =
+        if i = n
+        then e
+        else go (i+1) (f(i,e))
+    in go 0 e
+    end
 in
   open Sha2Type
 
@@ -22,13 +29,6 @@ in
    * 6.1. SHA-224 and SHA-256 Initialization
    *)
   val H0 = S.H0
-
-  (**
-   * 4.1.  SHA-224 and SHA-256
-   *
-   * Suppose a message has length L < 2^64.  Before it is input to the
-   * hash function, the message is padded on the right as follows:
-   *)
 
   (**
    * b. K "0"s are appended where K is the smallest, non-negative solution
@@ -68,17 +68,6 @@ in
       Hash (T1+T2,a,b,c,d+T1,e,f,g)
     end
 
-  (* fold on Nat sequence from 0 to n *)
-  fun foldNat f e n =
-    let
-      fun go i e =
-        if i = n
-        then e
-        else go (i+1) (f(i,e))
-    in
-      go 0 e
-    end
-
   (* compute hash for a 512bit block *)
   fun process_block (M,H) =
     let
@@ -108,12 +97,19 @@ in
          | NONE => NONE
     end
 
-  (* process tail of the entity stream and padding words *)
+  (**
+   * process tail of the entity stream and padding words
+   *
+   * 4.1.  SHA-224 and SHA-256
+   * Suppose a message has length L < 2^64.  Before it is input to the
+   * hash function, the message is padded on the right as follows:
+   *)
   fun process_tail n ws H =
     let
       val scanWord32 = scanWord32 List.getItem
       val L = (length ws + n*4) * 8
       val K = getK L
+      (* padding sequence *)
       val ws = List.concat [
                  ws
                , [0wx80] (* append "1" *)
@@ -131,16 +127,17 @@ in
   (* 6.2.  SHA-224 and SHA-256 Processing *)
   fun scan getw8 =
     let
-      val scanWord32 = scanWord32 getw8
-      fun go n H ss =
-        case Blk.scan scanWord32 ss
-          of SOME(M,ss) => go (n+1) (process_block (M,H)) ss
-           | NONE       =>
-               let val SOME(ws,ss) = R.read_all getw8 ss in
-                 SOME(process_tail n ws H, ss)
-               end
+      fun entity n H ss =
+        case Blk.scan (scanWord32 getw8) ss
+          of SOME(M,ss) => entity (n+1) (process_block (M,H)) ss
+           | NONE       => (n, H, ss)
+
+      fun tail (n, H, ss) =
+        let val (ws,ss) = R.read_all getw8 ss in
+          SOME(process_tail n ws H, ss)
+        end
     in
-      go 0 H0
+      tail o (entity 0 H0)
     end
 
   fun hash str =
@@ -148,8 +145,11 @@ in
       (#1 o valOf) (scan getWord8 (Substring.full str))
     end
 
+  fun hash_vector_slice slice =
+    (#1 o valOf) (scan VectorSlice.getItem slice)
+
   fun hash_vector vector =
-    (#1 o valOf) (scan VectorSlice.getItem (VectorSlice.full vector))
+    hash_vector_slice (VectorSlice.full vector)
 
   fun hash_bin_stream strm =
     (#1 o valOf) (scan BinIO.StreamIO.input1 strm)
