@@ -1,5 +1,5 @@
 
-functor MkSha224And256 (S : SHA224AND256CORE) =
+functor MkSha2 (S : SHA2CORE) =
 struct
 local
   structure R = Reader

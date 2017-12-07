@@ -1,6 +1,6 @@
-
 (**
  * 5.  Functions and Constants Used
+ * 5.1.  SHA-224 and SHA-256
  *
  * SHA-224 and SHA-256 use six logical functions, where each function
  * operates on 32-bit words, which are represented as x, y, and z.  The

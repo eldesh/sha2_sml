@@ -1,9 +1,9 @@
 
-structure Sha224 =
+structure Sha384 =
 struct
 local
-  structure T = Sha2Type32
-  structure C = Sha224And256Core(Sha224Init)
+  structure T = Sha2Type64
+  structure C = Sha384And512Core(Sha384Init)
 
   datatype h = Hash of T.Word.word * T.Word.word * T.Word.word * T.Word.word
                      * T.Word.word * T.Word.word * T.Word.word

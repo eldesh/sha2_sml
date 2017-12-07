@@ -1,5 +1,5 @@
 
-signature SHA224AND256CORE =
+signature SHA2CORE =
 sig
   structure Word : WORD
 
