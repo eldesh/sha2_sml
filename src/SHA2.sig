@@ -2,11 +2,12 @@
 signature SHA2 =
 sig
   include SHA2CORE
-  val ofSubstring   : Substring.substring -> t
-  val ofString      : String.string -> t
-  val ofVectorSlice : Word8.word VectorSlice.slice -> t
-  val ofVector      : Word8.word Vector.vector -> t
-  val ofBinStream   : BinIO.StreamIO.instream -> t
-  val ofTextStream  : TextIO.StreamIO.instream -> t
+
+  val ofSubstring   : Substring.substring -> Word.word t
+  val ofString      : String.string -> Word.word t
+  val ofVectorSlice : Word8.word VectorSlice.slice -> Word.word t
+  val ofVector      : Word8.word Vector.vector -> Word.word t
+  val ofBinStream   : BinIO.StreamIO.instream -> Word.word t
+  val ofTextStream  : TextIO.StreamIO.instream -> Word.word t
 end
 

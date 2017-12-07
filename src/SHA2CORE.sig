@@ -2,8 +2,8 @@
 signature SHA2CORE =
 sig
   structure Word : WORD
+  type 'a t
 
-  type t
-  val scan : (Word8.word, 'a) Reader.t -> (t, 'a) Reader.t
+  val scan : (Word8.word, 'a) Reader.t -> (Word.word t, 'a) Reader.t
 end
 

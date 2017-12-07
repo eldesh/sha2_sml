@@ -6,7 +6,7 @@
  * function operates on 64-bit words, which are represented as x, y, and
  * z.  The result of each function is a new 64-bit word.
  *)
-structure Sha384And512Func =
+structure Sha384And512Func :> SHA2FUNC where type Word.word = Word64.word =
 struct
 local
   structure Ops = MkSha2Ops(Word64)
@@ -15,6 +15,8 @@ local
   infix 2 AND
   infix 1 OR XOR
 in
+  structure Word = Word64
+
   fun CH (x, y, z) =
     (x AND y) XOR ((NOT x) AND z)
 

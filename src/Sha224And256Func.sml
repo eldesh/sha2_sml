@@ -6,7 +6,7 @@
  * operates on 32-bit words, which are represented as x, y, and z.  The
  * result of each function is a new 32-bit word.
  *)
-structure Sha224And256Func =
+structure Sha224And256Func :> SHA2FUNC where type Word.word = Word32.word =
 struct
 local
   structure Ops = MkSha2Ops(Word32)
@@ -15,6 +15,8 @@ local
   infix 2 AND
   infix 1 OR XOR
 in
+  structure Word = Word32
+
   fun CH (x, y, z) =
     (x AND y) XOR ((NOT x) AND z)
 
@@ -33,7 +35,7 @@ in
    * four prime numbers.  In hex, these constant words are as follows
    * (from left to right):
    *)
-  val K : Word32.word vector = vector
+  val K : Word.word vector = vector
     [ 0wx428a2f98, 0wx71374491, 0wxb5c0fbcf, 0wxe9b5dba5
     , 0wx3956c25b, 0wx59f111f1, 0wx923f82a4, 0wxab1c5ed5
     , 0wxd807aa98, 0wx12835b01, 0wx243185be, 0wx550c7dc3

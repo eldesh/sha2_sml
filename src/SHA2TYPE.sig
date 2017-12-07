@@ -1,11 +1,9 @@
 
 signature SHA2TYPE =
 sig
-  structure Word : WORD
+  datatype 'w t = Hash of 'w * 'w * 'w * 'w
+                        * 'w * 'w * 'w * 'w
 
-  datatype t = Hash of Word.word * Word.word * Word.word * Word.word
-                     * Word.word * Word.word * Word.word * Word.word
-
-  val toString : t -> string
+  val toString : ('w -> string) -> 'w t -> string
 end
 

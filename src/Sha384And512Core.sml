@@ -1,14 +1,16 @@
 
-functor Sha384And512Core (S : sig val H0 : Sha2Type64.t end) (* : SHA2CORE *) =
+functor Sha384And512Core (structure I : SHA2INIT where type Word.word = Word64.word
+                          structure F : SHA2FUNC where type Word.word = Word64.word)
+ : SHA2CORE
+   where type Word.word = I.Word.word
+     and type      'a t = 'a Sha2Type.t =
 struct
 local
-  structure Functions = Sha384And512Func
-  open Functions
-  structure For = ForLoop
-  open For
+  structure R    = Reader
+  structure Blk  = Block1024
 
-  structure R = Reader
-  structure Blk = Block1024
+  open F
+  open ForLoop
 
   (* fold on Nat sequence from 0 to n *)
   fun foldNat f e n =
@@ -28,7 +30,8 @@ local
       print (Vector.foldli (fn(i,w,s)=> s ^ "\n" ^ header i ^ " " ^ pp w) "" vec)
     end
 in
-  open Sha2Type64
+  open Sha2Type
+  structure Word = Word64
 
   fun toString (Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
     String.concatWith "\n" (map Word.toString [h0,h1,h2,h3,h4,h5,h6,h7])
@@ -36,7 +39,7 @@ in
   (**
    * 6.3. SHA-384 and SHA-512 Initialization
    *)
-  val H0 = S.H0
+  val H0 = I.H0
 
   (**
    * b. K "0"s are appended where K is the smallest, non-negative solution

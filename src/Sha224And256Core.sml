@@ -1,14 +1,16 @@
 
-functor Sha224And256Core (S : sig val H0 : Sha2Type32.t end) : SHA2CORE =
+functor Sha224And256Core (structure I : SHA2INIT where type Word.word = Word32.word
+                          structure F : SHA2FUNC where type Word.word = Word32.word)
+ : SHA2CORE
+   where type Word.word = I.Word.word
+     and type      'a t = 'a Sha2Type.t =
 struct
 local
-  structure Functions = Sha224And256Func
-  open Functions
-  structure For = ForLoop
-  open For
+  structure R    = Reader
+  structure Blk  = Block512
 
-  structure R = Reader
-  structure Blk = Block512
+  open F
+  open ForLoop
 
   (* fold on Nat sequence from 0 to n *)
   fun foldNat f e n =
@@ -20,7 +22,8 @@ local
     in go 0 e
     end
 in
-  open Sha2Type32
+  open Sha2Type
+  structure Word = Word32
 
   fun toString (Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
     String.concatWith "\n" (map Word.toString [h0,h1,h2,h3,h4,h5,h6,h7])
@@ -28,7 +31,7 @@ in
   (**
    * 6.1. SHA-224 and SHA-256 Initialization
    *)
-  val H0 = S.H0
+  val H0 = I.H0
 
   (**
    * b. K "0"s are appended where K is the smallest, non-negative solution

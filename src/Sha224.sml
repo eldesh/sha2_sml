@@ -2,19 +2,20 @@
 structure Sha224 =
 struct
 local
-  structure T = Sha2Type32
-  structure C = Sha224And256Core(Sha224Init)
+  structure C = Sha224And256Core(
+                    structure I = Sha224Init
+                    structure F = Sha224And256Func)
 
-  datatype h = Hash of T.Word.word * T.Word.word * T.Word.word * T.Word.word
-                     * T.Word.word * T.Word.word * T.Word.word
+  datatype 'a h = Hash of 'a * 'a * 'a * 'a
+                        * 'a * 'a * 'a
 
-  fun fromEntity (T.Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
+  fun fromEntity (Sha2Type.Hash(h0,h1,h2,h3,h4,h5,h6,_)) =
     Hash(h0,h1,h2,h3,h4,h5,h6)
 
   structure H = MkSha2(
   struct
     open C
-    type t = h
+    type 'a t = 'a h
     fun scan getw = Reader.fmap fromEntity (C.scan getw)
   end)
 in
