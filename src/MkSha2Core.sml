@@ -89,7 +89,7 @@ in
       Hash (T1+T2,a,b,c,d+T1,e,f,g)
     end
 
-  (* compute hash for a 512bit block *)
+  (* compute hash for a 512bit or 1024bit block *)
   fun process_block (M,H) =
     let
       val _ = () (* print(toString H ^ "\n") *)
@@ -174,8 +174,11 @@ in
          ])
     end
 
-  (** 6.2.  SHA-224 and SHA-256 Processing *)
-  fun scan getw8 =
+  (**
+   * 6.2. SHA-224 and SHA-256 Processing
+   * 6.4. SHA-384 and SHA-512 Processing
+   *)
+  fun hashStream getw8 =
     let
       val op+ = Int.+
       fun entity n H ss =
@@ -190,6 +193,35 @@ in
     in
       tail o (entity 0 H0)
     end
+
+  fun hashStream' getw = (#1 o valOf) o (hashStream getw)
+
+  local
+    structure SS = Substring
+  in
+  fun fromString str =
+    let
+      val ss = SS.full str
+      fun get ss =
+        let
+          val w = SOME(SS.splitAt (ss, onBitWidth 8 16)) handle Subscript => NONE
+        in
+          Option.mapPartial
+            (fn(w,ws)=> Option.map
+                          (fn w=> (w,ws))
+                          (Word.fromString (SS.string w)))
+            w
+        end
+    in
+      case R.seqN get 8 ss
+        of SOME([h0,h1,h2,h3,h4,h5,h6,h7],ss) =>
+             if SS.isEmpty ss
+             then SOME(Sha2Type.Hash(h0,h1,h2,h3,h4,h5,h6,h7))
+             else NONE
+         | NONE =>
+             NONE
+    end
+  end
 
 end (* local *)
 end

@@ -21,7 +21,32 @@ local
       let fun tos w = StringCvt.padLeft #"0" (2 * 8) (Word.toString w)
       in concat (map tos [h0,h1,h2,h3,h4,h5,h6]) end
 
-    fun scan getw = Reader.fmap fromEntity (C.scan getw)
+    structure SS = Substring
+    fun fromString str =
+      let
+        val ss = SS.full str
+        fun get ss =
+          let
+            val w = SOME(SS.splitAt (ss, 16)) handle Subscript => NONE
+          in
+            Option.mapPartial
+              (fn(w,ws)=> Option.map
+                            (fn w=> (w,ws))
+                            (Word.fromString (SS.string w)))
+              w
+          end
+      in
+        case Reader.seqN get 7 ss
+          of SOME([h0,h1,h2,h3,h4,h5,h6],ss) =>
+               if SS.isEmpty ss
+               then SOME(Hash(h0,h1,h2,h3,h4,h5,h6))
+               else NONE
+           | NONE =>
+               NONE
+      end
+
+    fun hashStream getw = Reader.fmap fromEntity (C.hashStream getw)
+    fun hashStream' getw = (#1 o valOf) o (hashStream getw)
   end)
 in
   open H
