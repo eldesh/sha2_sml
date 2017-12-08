@@ -1,5 +1,5 @@
 
-structure Sha512 =
+structure Sha512 :> SHA2 =
 struct
   structure H = MkSha2(MkSha2Core(
                     structure I = Sha512Init

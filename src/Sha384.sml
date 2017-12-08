@@ -1,5 +1,5 @@
 
-structure Sha384 =
+structure Sha384 :> SHA2 =
 struct
 local
   structure C = MkSha2Core(
