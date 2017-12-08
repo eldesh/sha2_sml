@@ -14,8 +14,13 @@ local
 
   structure H = MkSha2(
   struct
-    open C
+    structure Word = C.Word
     type 'a t = 'a h
+
+    fun toString (Hash(h0,h1,h2,h3,h4,h5,h6) : Word.word t) =
+      let fun tos w = StringCvt.padLeft #"0" (2 * 8) (Word.toString w)
+      in concat (map tos [h0,h1,h2,h3,h4,h5,h6]) end
+
     fun scan getw = Reader.fmap fromEntity (C.scan getw)
   end)
 in

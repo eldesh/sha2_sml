@@ -31,9 +31,6 @@ in
   (** NOTE: SML cannot resolve overloading on op+ for F.Word.word type *)
   val op+ = F.Word.+
 
-  fun toString (Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
-    String.concatWith "\n" (map F.Word.toString [h0,h1,h2,h3,h4,h5,h6,h7])
-
   (**
    * 6.1. SHA-224 and SHA-256 Initialization
    *)
@@ -43,6 +40,10 @@ in
     if Word.wordSize = 32
     then v32
     else v64
+
+  fun toString (Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
+    let fun tos w = StringCvt.padLeft #"0" ((onBitWidth 4 8) * 2) (Word.toString w)
+    in concat (map F.Word.toString [h0,h1,h2,h3,h4,h5,h6,h7]) end
 
   (**
    * b. K "0"s are appended where K is the smallest, non-negative solution
@@ -91,7 +92,7 @@ in
   (* compute hash for a 512bit block *)
   fun process_block (M,H) =
     let
-      val _ = print(toString H ^ "\n")
+      val _ = () (* print(toString H ^ "\n") *)
       val W = scheduleW M
       val Hash (a,b,c,d,e,f,g,h) = foldNat (compute W) H (onBitWidth 64 80)
       val Hash H1 = H
