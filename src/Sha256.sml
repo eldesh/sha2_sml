@@ -2,10 +2,9 @@
 structure Sha256 =
 struct
 local
-  structure C = Sha224And256Core(
+  structure H = MkSha2(MkSha2Core(
                     structure I = Sha256Init
-                    structure F = Sha224And256Func)
-  structure H = MkSha2(C)
+                    structure F = Sha224And256Func))
 in
   open H
 end

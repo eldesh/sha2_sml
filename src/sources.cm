@@ -5,8 +5,7 @@ is
   ToWord8Tuple.sml
   ToWord8List.sml
   Reader.sml
-  Block512.sml
-  Block1024.sml
+  MkBlock.sml
   SHA2TYPE.sig
   SHA2FUNC.sig
   SHA2INIT.sig
@@ -19,8 +18,7 @@ is
   Sha384And512Func.sml
   MkSha2Ops.sml
   SHA2CORE.sig
-  Sha224And256Core.sml
-  Sha384And512Core.sml
+  MkSha2Core.sml
   SHA2.sig
   MkSha2.sml
   Sha224.sml

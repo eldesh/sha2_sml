@@ -6,8 +6,8 @@ functor Sha384And512Core (structure I : SHA2INIT where type Word.word = Word64.w
      and type      'a t = 'a Sha2Type.t =
 struct
 local
-  structure R    = Reader
-  structure Blk  = Block1024
+  structure R   = Reader
+  structure Blk = MkBlock(I.Word)
 
   open F
   open ForLoop
@@ -114,10 +114,6 @@ in
 
   (**
    * process tail of the entity stream and padding words
-   *
-   * 4.2.  SHA-384 and SHA-512
-   * Suppose a message has length L < 2^128.  Before it is input to the
-   * hash function, the message is padded on the right as follows:
    *)
   fun process_tail n ws H =
     let

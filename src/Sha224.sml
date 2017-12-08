@@ -2,7 +2,7 @@
 structure Sha224 =
 struct
 local
-  structure C = Sha224And256Core(
+  structure C = MkSha2Core(
                     structure I = Sha224Init
                     structure F = Sha224And256Func)
 
