@@ -7,19 +7,19 @@ local
                     structure F = Sha384And512Func)
 
   datatype 'a h = Hash of 'a * 'a * 'a * 'a
-                        * 'a * 'a * 'a
+                        * 'a * 'a
 
-  fun fromEntity (Sha2Type.Hash(h0,h1,h2,h3,h4,h5,h6,_)) =
-    Hash(h0,h1,h2,h3,h4,h5,h6)
+  fun fromEntity (Sha2Type.Hash(h0,h1,h2,h3,h4,h5,_,_)) =
+    Hash(h0,h1,h2,h3,h4,h5)
 
   structure H = MkSha2(
   struct
     structure Word = C.Word
     type 'a t = 'a h
 
-    fun toString (Hash(h0,h1,h2,h3,h4,h5,h6) : Word.word t) =
+    fun toString (Hash(h0,h1,h2,h3,h4,h5) : Word.word t) =
       let fun tos w = StringCvt.padLeft #"0" (2 * 8) (Word.toString w)
-      in concat (map tos [h0,h1,h2,h3,h4,h5,h6]) end
+      in concat (map tos [h0,h1,h2,h3,h4,h5]) end
 
     structure SS = Substring
     fun fromString str =
@@ -36,10 +36,10 @@ local
               w
           end
       in
-        case Reader.seqN get 7 ss
-          of SOME([h0,h1,h2,h3,h4,h5,h6],ss) =>
+        case Reader.seqN get 6 ss
+          of SOME([h0,h1,h2,h3,h4,h5],ss) =>
                if SS.isEmpty ss
-               then SOME(Hash(h0,h1,h2,h3,h4,h5,h6))
+               then SOME(Hash(h0,h1,h2,h3,h4,h5))
                else NONE
            | NONE =>
                NONE

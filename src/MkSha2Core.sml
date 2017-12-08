@@ -157,7 +157,7 @@ in
   fun process_tail n ws H =
     let
       val op+ = Int.+
-      val L = (length ws + n * 4) * 8
+      val L = (length ws + n * (onBitWidth 4 8)) * 8
       val K = getK L
       fun go H ss =
         case Blk.scan (scanWord List.getItem) ss
@@ -170,6 +170,9 @@ in
            ws
          , [0wx80] (* append "1" *)
          , repeatN (K div 8) 0w0
+         , onBitWidth
+             []
+             (ToWord8List.fromWord64 (Word64.fromInt 0)) (* 128bit representation *)
          , ToWord8List.fromWord64 (Word64.fromInt L)
          ])
     end
