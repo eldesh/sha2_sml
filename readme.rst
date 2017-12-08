@@ -20,8 +20,11 @@ Support
 ----------------------------------------------------------------
 
 Recent versions SML/NJ should be work well.
-Library had been developped with SML/NJ 110.82 .
+This library had been developped with SML/NJ **110.82** .
 
 
 .. _rfc6234: https://tools.ietf.org/html/rfc6234
+.. _`Cryptographic Standards and Guidelines`: https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+.. _`NESSIE test vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/hash/sha/
+
 
