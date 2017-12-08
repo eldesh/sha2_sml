@@ -19,6 +19,14 @@ local
         else go (i+1) (f(i,e))
     in go 0 e
     end
+
+  fun print_vec vec =
+    let
+      fun pp w = StringCvt.padLeft #"0" 16 (Word64.toString w)
+      fun header i = StringCvt.padLeft #"0" 2 (Int.toString i)
+    in
+      print (Vector.foldli (fn(i,w,s)=> s ^ "\n" ^ header i ^ " " ^ pp w) "" vec)
+    end
 in
   open Sha2Type64
 
@@ -66,15 +74,16 @@ in
       val T2 = BSIG0 a + MAJ(a,b,c)
       val H = Hash (T1+T2,a,b,c,d+T1,e,f,g)
     in
-      print(Int.toString t ^ " " ^ Sha2Type64.toString H ^ "\n");
+      (* print(Int.toString t ^ " " ^ Sha2Type64.toString H ^ "\n"); *)
       H
     end
 
   (* compute hash for a 1024bit block *)
   fun process_block (M,H) =
     let
-      val _ = print(toString H ^ "\n")
+      val () = () (* print(toString H ^ "\n") *)
       val W = scheduleW M
+      val () = () (* (print("W[t]:\n"); print_vec W; print "\n") *)
       val Hash (a,b,c,d,e,f,g,h) = foldNat (compute W) H 80
       val Hash H1 = H
     in
@@ -123,7 +132,7 @@ in
                ]
       fun go H ss =
         case Blk.scan scanWord64 ss
-          of SOME(M,ss) => (print((Blk.toString M) ^ "\n");
+          of SOME(M,ss) => ((* print("Block:\n" ^ (Blk.toString M) ^ "\n"); *)
                             go (process_block (M,H)) ss)
            | NONE       => H
     in

@@ -23,7 +23,7 @@ in
   fun BSIG0 x = (ROTR 28 x) XOR (ROTR 34 x) XOR (ROTR 39 x)
   fun BSIG1 x = (ROTR 14 x) XOR (ROTR 18 x) XOR (ROTR 41 x)
   fun SSIG0 x = (ROTR 1  x) XOR (ROTR 8  x) XOR (SHR  7  x)
-  fun SSIG1 x = (ROTR 19 x) XOR (ROTR 61 x) XOR (SHR  60 x)
+  fun SSIG1 x = (ROTR 19 x) XOR (ROTR 61 x) XOR (SHR  6  x)
 
   (**
    * SHA-384 and SHA-512 use the same sequence of eighty constant 64-bit
