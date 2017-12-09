@@ -157,7 +157,7 @@ in
   fun process_tail n ws H =
     let
       val op+ = Int.+
-      val L = (length ws + n * (onBitWidth 4 8)) * 8
+      val L = length ws * 8 + nblk * Blk.lengthBit
       val K = getK L
       fun go H ss =
         case Blk.scan (scanWord List.getItem) ss

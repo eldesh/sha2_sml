@@ -7,6 +7,8 @@ struct
    *)
   datatype t = Block of W.word vector
 
+  val lengthBit = W.wordSize * 16
+
   exception WrongLength of W.word vector
 
   fun toVector (Block vec) = vec
