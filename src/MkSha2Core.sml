@@ -43,7 +43,7 @@ in
 
   fun toString (Hash(h0,h1,h2,h3,h4,h5,h6,h7)) =
     let fun tos w = StringCvt.padLeft #"0" ((onBitWidth 4 8) * 2) (Word.toString w)
-    in concat (map F.Word.toString [h0,h1,h2,h3,h4,h5,h6,h7]) end
+    in concat (map tos [h0,h1,h2,h3,h4,h5,h6,h7]) end
 
   (**
    * b. K "0"s are appended where K is the smallest, non-negative solution
