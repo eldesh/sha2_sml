@@ -153,8 +153,12 @@ in
    * 4.2.  SHA-384 and SHA-512
    * Suppose a message has length L < 2^128.  Before it is input to the
    * hash function, the message is padded on the right as follows:
+   *
+   * @param nblk    number of consumed blocks
+   * @param ws      remaining input stream
+   * @param H       context
    *)
-  fun process_tail n ws H =
+  fun process_tail nblk ws H =
     let
       val op+ = Int.+
       val L = length ws * 8 + nblk * Blk.lengthBit
