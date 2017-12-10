@@ -335,10 +335,11 @@ struct
        , test_nessie_512()
       ])
 
-  fun test () = $("test",
-    &[ test_example_values()
-     , test_nessie_test_vectors()
-    ])
+  fun test () =
+    $("test",
+      &[ test_example_values()
+       , test_nessie_test_vectors()
+      ])
 
   fun main () =
     (TextUITestRunner.runTest {output=TextIO.stdOut} (test());
