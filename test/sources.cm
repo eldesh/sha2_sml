@@ -4,3 +4,4 @@ is
   $/smlunitlib.cm
   ../src/sources.cm
   Sha2Test.sml
+  runtest.sml
