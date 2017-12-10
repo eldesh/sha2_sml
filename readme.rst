@@ -73,7 +73,7 @@ Test
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 This project containts a unit test module provides many test cases.
-These test cases are imported from `Cryptographic Standards and Guidelines`_ and `NESSIE test vectors`_.
+These test cases are imported from `Cryptographic Standards and Guidelines`_ and `NESSIE test vectors`_ and `Secure Hash Standard Validation System (SHAVS)`.
 
 
 Loading the unit test CM file, some test cases would be executed:
@@ -96,5 +96,5 @@ Then you will see the result of each test case.
 .. _rfc6234: https://tools.ietf.org/html/rfc6234
 .. _`Cryptographic Standards and Guidelines`: https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
 .. _`NESSIE test vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/hash/sha/
-
+.. _`Secure Hash Standard Validation System (SHAVS)`: https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs
 

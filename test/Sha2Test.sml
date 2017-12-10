@@ -335,10 +335,19 @@ struct
        , test_nessie_512()
       ])
 
+  (** https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
+   * test vectors from Secure Hash Standard Validation System (SHAVS)
+   *)
+  fun test_cavp_test_vectors () =
+    $("cavp_test_vectors",
+      &[
+      ])
+
   fun test () =
     $("test",
       &[ test_example_values()
        , test_nessie_test_vectors()
+       , test_cavp_test_vectors()
       ])
 
   fun main () =
