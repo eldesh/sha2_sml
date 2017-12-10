@@ -1,4 +1,3 @@
-
 (**
  * 3.  Operations on Words
  *
@@ -13,25 +12,25 @@
  * of x and then prepend the result with n zeroed bits on the left (the
  * result will still be the same number of bits).
  *)
-structure Sha384And512Ops =
+functor MkSha2Ops (W : WORD) =
 struct
   infix >>
   infix <<
-  val op>> = Word64.>>
-  val op<< = Word64.<<
-  val w = Word.fromInt Word64.wordSize
+  val op>> = W.>>
+  val op<< = W.<<
+  val w = Word.fromInt W.wordSize
 
   (**
    * a. Bitwise logical word operations
    *       X AND Y  =  bitwise logical "and" of  X and Y.
    *)
-  fun AND (x,y) = Word64.andb (x, y)
+  fun AND (x,y) = W.andb (x, y)
   (*       X OR Y   =  bitwise logical "inclusive-or" of X and Y. *)
-  fun OR  (x,y) = Word64.orb (x, y)
+  fun OR  (x,y) = W.orb (x, y)
   (*       X XOR Y  =  bitwise logical "exclusive-or" of X and Y. *)
-  fun XOR (x,y) = Word64.xorb (x, y)
+  fun XOR (x,y) = W.xorb (x, y)
   (*       NOT X    =  bitwise logical "complement" of X.  *)
-  fun NOT x = Word64.notb x
+  fun NOT x = W.notb x
 
   infix 2 AND
   infix 1 OR XOR

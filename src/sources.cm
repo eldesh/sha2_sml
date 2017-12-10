@@ -16,9 +16,8 @@ is
   Sha384Init.sml
   Sha512Init.sml
   Sha224And256Func.sml
-  Sha224And256Ops.sml
   Sha384And512Func.sml
-  Sha384And512Ops.sml
+  MkSha2Ops.sml
   SHA2CORE.sig
   Sha224And256Core.sml
   Sha384And512Core.sml

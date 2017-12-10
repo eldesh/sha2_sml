@@ -9,7 +9,8 @@
 structure Sha384And512Func =
 struct
 local
-  open Sha384And512Ops
+  structure Ops = MkSha2Ops(Word64)
+  open Ops
 
   infix 2 AND
   infix 1 OR XOR

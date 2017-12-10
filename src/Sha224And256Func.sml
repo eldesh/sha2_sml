@@ -9,7 +9,8 @@
 structure Sha224And256Func =
 struct
 local
-  open Sha224And256Ops
+  structure Ops = MkSha2Ops(Word32)
+  open Ops
 
   infix 2 AND
   infix 1 OR XOR
