@@ -22,6 +22,7 @@ is
   SHA2CORE.sig
   Sha224And256Core.sml
   Sha384And512Core.sml
+  SHA2.sig
   MkSha2.sml
   Sha224.sml
   Sha256.sml
