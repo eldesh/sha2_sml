@@ -1,0 +1,171 @@
+
+structure Sha2Test =
+struct
+  open SMLUnit
+  open Assert
+  val ($,%,&,?) = let open Test in (TestLabel, TestCase, TestList, assert) end
+
+  local
+    val ` = valOf o Sha224.fromString
+    val hash = Sha224.hashString
+    val assert = assertEqual op= Sha224.toString
+  in
+    fun test_sha224 () =
+      $("test_sha224",
+        &[ %(fn()=> assert (`"23097D223405D8228642A477BDA255B32AADBCE4BDA0B3F7E36C9DA7")
+                           (hash "abc"))
+         , %(fn()=> assert (`"75388B16512776CC5DBA5DA1FD890150B0C6455CB4F58B1952522525")
+                           (hash "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"))
+        ])
+  end
+
+  local
+    open Sha256
+    val ` = valOf o fromString
+    val hash = hashString
+    val assert = assertEqual op= toString
+    infix ==> =-=>
+    fun input ==> exp = %(fn()=> assert (` exp) (hashString input))
+    fun input =-=> exp = %(fn()=> assert (` exp) (hashVector input))
+    fun repeat 0 _ = []
+      | repeat n x = x::repeat (n-1) x
+  in
+    fun test_sha256 () =
+      $("test_sha256",
+        &[ "abc"   ==> "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD"
+         , "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+                   ==> "248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1"
+        ])
+
+    fun test_nessie_256 () =
+      $("test_nessie_256", &[
+        $("set1",
+          &[ ""    ==> "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+           , "a"   ==> "CA978112CA1BBDCAFAC231B39A23DC4DA786EFF8147C4E72B9807785AFEE48BB"
+           , "abc" ==> "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD"
+           , "message digest"
+                   ==> "F7846F55CF23E14EEBEAB5B4E1550CAD5B509E3348FBC4EFA3A1413D393CB650"
+           , "abcdefghijklmnopqrstuvwxyz"
+                   ==> "71C480DF93D6AE2F1EFAD1447C66C9525E316218CF51FC8D9ED832F2DAF18B73"
+           , "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+                   ==> "248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1"
+           , "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+                   ==> "DB4BFCBD4DA0CD85A60C3C37D3FBD8805C77F15FC6B1FDFE614EE0A7C8FDB4C0"
+           , concat (repeat 8 "1234567890")
+                   ==> "F371BC4A311F2B009EEF952DD83CA80E2B60026C8E935592D0F9C308453C813E"
+           , concat (repeat 1000000 "a")
+                   ==> "CDC76E5C9914FB9281A1C7E284D73E67F1809A48A497200E046D39CCC7112CD0"
+          ]),
+        $("set2",
+          &[  (* set2 *)
+          ]),
+        $("set3",
+          let fun tuck0 n v = vector (repeat n 0w0 @ v :: repeat (64-n-1) 0w0) in
+          &[ (tuck0 0 0wx80) =-=> "A9E8913B13864096B9EA592F9548C87654AAF8DF24E3437645FAC174D1036E1C"
+           , (tuck0 0 0wx40) =-=> "F315F3F6D33215F8777A7D5A4B809F433729D13A86FE6ADF3DA5C11137E18273"
+           , (tuck0 0 0wx20) =-=> "AE1F446791358EEB17DEBD264614CAEB7F72558C085C73BE0DDE284B4C63A957"
+           , (tuck0 0 0wx10) =-=> "94C41AF484FFF7964969E0BDD922F82DFF0F4BE87A60D0664CC9D1FFD3ACD650"
+           , (tuck0 0 0wx08) =-=> "2763D88A93549AF57C701D5187E8B477D9AA99EBEFE6D1E41A3CE07BF1A1AA50"
+           , (tuck0 0 0wx04) =-=> "D6E497B816C27A31ACD5D9F3ED670639FEF7842FEE51F044DFBFB6319C760A5F"
+           , (tuck0 0 0wx02) =-=> "8A023A9E4AFFBB255A6B48AE85CC4A7D1A1B9E8E6809FE9E48535C01C1FC071A"
+           , (tuck0 0 0wx01) =-=> "16ABAB341FB7F370E27E4DADCF81766DD0DFD0AE64469477BB2CF6614938B2AF"
+           , (tuck0 1 0wx80) =-=> "5A42062C0EF5A54ECCF7B0B155C90BBF408AB2480EE939342ACBEBC24E265401"
+           , (tuck0 1 0wx40) =-=> "B5B17E5DFF8C9A4AE35D22DE243821159C400060F0F32D8FD87914DA904AE459"
+           , (tuck0 1 0wx20) =-=> "5CD77BAB00B0CDF152F3B0B42287F061E5DAF3AC7806B484572DB8E0A64BEE77"
+           , (tuck0 1 0wx10) =-=> "ED5F4ED0D6617D50ABD49D4C84281E175B48A7E1EDF550A89BF2C9B5C4CE01F0"
+           , (tuck0 1 0wx08) =-=> "D5755A80F47671E9C3E10C007865D7868432D9942CA2CE7D60510039A281CC5C"
+           , (tuck0 1 0wx04) =-=> "335D953107E146619C0BF52F8D650C2CDBB5DAF1E1278F51437D96215AC74DB9"
+           , (tuck0 1 0wx02) =-=> "1A2A07EA5731313C488CD126D0C118542516CF35A507F9E8AE4A81EA92E3F267"
+           , (tuck0 1 0wx01) =-=> "4286DA436D65E3A216846042CA5E0F51AC7A192E9DA271A72A9C4097BEECD52F"
+           , (tuck0 2 0wx80) =-=> "FE882C6CF31C7A4A93A4F5A2BC5499E443731A87F6074EB32CEFAFA3E3B8B864"
+           , (tuck0 2 0wx40) =-=> "5B9CD7FE975B5F7894DF930EB23518029068F9BA7D2DAD3D8DA29B40E1AA2EF0"
+           , (tuck0 2 0wx20) =-=> "36558C5A404A9748423F31D60FAD2373E643A9B5B2F145C4390AD8C80345DC14"
+           , (tuck0 2 0wx10) =-=> "887BBFD20CB15B19D2483B1D56DFCF5BCD74B8D05ED44CC912ABE80E92D1064F"
+           , (tuck0 2 0wx08) =-=> "5D434409283CDC8E500C72DE5591F50BD858C8377A7F5F979E5F1B446E091EC0"
+           , (tuck0 2 0wx04) =-=> "68062FA9A8B16191F44B782CBC5C35E434965C23E7922001447B2005F5EAB033"
+           , (tuck0 2 0wx02) =-=> "CFA4AAF2F726AD6D9726B59E8D850BA58B688490E5214187B1766963E0DC1408"
+           , (tuck0 2 0wx01) =-=> "2F59C313EECC21D0CAE49D92EF60246E0498BCB84FF30925F2E9BC045578B1AA"
+           , (tuck0 3 0wx80) =-=> "2E7963AF3EC7FF5CE6A4C23FF2C3D9BFA765C1A7CCF843E03E0BE147D852E91D"
+           , (tuck0 3 0wx40) =-=> "2FF775793E4DCBAD7D20D2428BC09CEEC908628797AEFD57A958B50F3485FEA3"
+           , (tuck0 3 0wx20) =-=> "3DAE0491CDE03D6C7FAEA715170ED25139A0F7B77F601FA20F2A6FBAF8076610"
+           , (tuck0 3 0wx10) =-=> "63635B0197FC6C31478B85C92748372B03C4356718B5D600B677C2F7A2A45DF9"
+           , (tuck0 3 0wx08) =-=> "C4F689A854EFE7254FE0683DFC3ED392BB5F98656B2B906437819416F43D190C"
+           , (tuck0 3 0wx04) =-=> "F0E43B2C47EE3CF4865CAFA6C2406CADEF4C7AE461AA7FD23C9F294F88AC3E23"
+           , (tuck0 3 0wx02) =-=> "C4A8240D8711FF7C881B00324B9FB0A8BE9D90D99E7F95525EA69EAF9F7658CB"
+           , (tuck0 3 0wx01) =-=> "18AE4CCBDA9538839D79BB18CA09E23E24AE8C1550F56CBB3D84B05331FFF401"
+           , (tuck0 4 0wx80) =-=> "1B19FF19DB12ED9ACC13FA3A0AF2359D7F247946306E2B4BB9C33CDAFF3AF619"
+           , (tuck0 4 0wx40) =-=> "9FC1D2FDDC3BF79EF1CD260C4DC38F9049FE9008A30361E939FB7D3484B78913"
+           , (tuck0 4 0wx20) =-=> "73EC741E9AAB162395254AAA253960753D7B2270648C47BCF88D6B56B4B21B6D"
+           , (tuck0 4 0wx10) =-=> "2E65812BD89BD1145EFEB3907772D220902C3D29DDA4DCBD5C56D956DFB3798A"
+           , (tuck0 4 0wx08) =-=> "96CBBE51E1657CEA98D8A528B326F9E12B4EC3E96DF44248472E314378E63289"
+           , (tuck0 4 0wx04) =-=> "0AB3F00B996C2E9B364C0180CBE26663D0270E7FBD54C6B1161A0E5AECF2730B"
+           , (tuck0 4 0wx02) =-=> "78554A3A0C8F62E32DB9906F946B2BB3AC03B88618170E9E67C011EE4F7096D1"
+           , (tuck0 4 0wx01) =-=> "D6DAAFE3DFBC6F26CEBBFEF13DBA8216F3CE07972F0755B0A39C92ABF6858E70"
+           , (tuck0 5 0wx80) =-=> "55FFE1A582E6C6EC8EB546943833E4B746B122597B0937E265A7E2151F8EC5F1"
+           , (tuck0 5 0wx40) =-=> "EC44B4A96BB31BE6E90B95FFAEF0FCB1650DCA2AC3687837FE0454EBCC3CF6E2"
+           , (tuck0 5 0wx20) =-=> "E233BA3685C62E92EAE8A6A5E876426D8C384A4F0A41DD769A2EE19156127C2B"
+           , (tuck0 5 0wx10) =-=> "C48910BEEC85E2C9E5DD94E15FB8F93FAE049199776832E7001CDC70139B24F5"
+           , (tuck0 5 0wx08) =-=> "E810A131AB2FE5C1B224E06FB74237C52CFC290F8BB5E7CA67704ACF26A6A8F4"
+           , (tuck0 5 0wx04) =-=> "EB3B3D88EC46D915AF459E38EEBCFE26ECD7FF2D966E99A5760A71001D4DB287"
+           , (tuck0 5 0wx02) =-=> "A6444DCE5DEED90C057E9BF7126BF2A7DDA65FEFD19C0C835BB6228D24319EB5"
+           , (tuck0 5 0wx01) =-=> "384A41704D44FC9FA013A0EE0A967AC55B303D92782D0DC1B002CE1163422B5B"
+          ]
+          end)
+        ])
+  end
+
+  local
+    val ` = valOf o Sha384.fromString
+    val hash = Sha384.hashString
+    val assert = assertEqual op= Sha384.toString
+  in
+    fun test_sha384 () =
+      $("test_sha384",
+        &[ %(fn()=> assert (`"CB00753F45A35E8BB5A03D699AC65007272C32AB0EDED1631A8B605A43FF5BED8086072BA1E7CC2358BAECA134C825A7")
+                           (hash "abc"))
+         , %(fn()=> assert (`"09330C33F71147E83D192FC782CD1B4753111B173B3B05D22FA08086E3B0F712FCC7C71A557E2DB966C3E9FA91746039")
+                           (hash "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"))
+        ])
+  end
+
+  local
+    val ` = valOf o Sha512.fromString
+    val hash = Sha512.hashString
+    val assert = assertEqual op= Sha512.toString
+  in
+    fun test_sha512 () =
+      $("test_sha512",
+        &[ %(fn()=> assert (`"DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F")
+                           (hash "abc"))
+         , %(fn()=> assert (`"8E959B75DAE313DA8CF4F72814FC143F8F7779C6EB9F7FA17299AEADB6889018501D289E4900F7E4331B99DEC4B5433AC7D329EEB6DD26545E96E55B874BE909")
+                           (hash "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"))
+        ])
+  end
+
+  (** https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+   *)
+  fun test_example_values () =
+    $("test_example_values",
+      &[ test_sha224()
+       , test_sha256()
+       , test_sha384()
+       , test_sha512()
+      ])
+
+  fun test_nessie_test_vectors () =
+    $("nessie_test_vectors",
+      &[ test_nessie_256()
+      ])
+
+  fun test () = $("test",
+    &[ test_example_values()
+     , test_nessie_test_vectors()
+    ])
+
+  fun main () =
+    (TextUITestRunner.runTest {output=TextIO.stdOut} (test());
+     TextIO.flushOut TextIO.stdOut
+     )
+end
+
+

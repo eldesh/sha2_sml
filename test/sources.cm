@@ -1,0 +1,6 @@
+group
+is
+  $/basis-2004.cm
+  $/smlunitlib.cm
+  ../src/sources.cm
+  Sha2Test.sml
