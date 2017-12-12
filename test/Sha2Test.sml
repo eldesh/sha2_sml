@@ -367,6 +367,8 @@ struct
                                (Sha224.hashStream' getWord8 (SS.full msg))))
             cases))
     end
+    handle IO.Io {name,function,cause}
+        => %(fn()=> fail (name ^ ":" ^ function ^ " " ^ exnMessage cause))
 
   fun test_cavp_sha256_msg length =
     let
@@ -381,6 +383,8 @@ struct
                                (Sha256.hashStream' getWord8 (SS.full msg))))
             cases))
     end
+    handle IO.Io {name,function,cause}
+        => %(fn()=> fail (name ^ ":" ^ function ^ " " ^ exnMessage cause))
 
   fun test_cavp_sha384_msg length =
     let
@@ -395,6 +399,8 @@ struct
                                (Sha384.hashStream' getWord8 (SS.full msg))))
             cases))
     end
+    handle IO.Io {name,function,cause}
+        => %(fn()=> fail (name ^ ":" ^ function ^ " " ^ exnMessage cause))
 
   fun test_cavp_sha512_msg length =
     let
@@ -409,6 +415,8 @@ struct
                                (Sha512.hashStream' getWord8 (SS.full msg))))
             cases))
     end
+    handle IO.Io {name,function,cause}
+        => %(fn()=> fail (name ^ ":" ^ function ^ " " ^ exnMessage cause))
 
   fun test_cavp_sha224 () =
     $("cavp_sha224",
