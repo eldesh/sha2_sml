@@ -73,7 +73,11 @@ Test
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 This project containts a unit test module provides many test cases.
-These test cases are imported from `Cryptographic Standards and Guidelines`_ and `NESSIE test vectors`_ and `Secure Hash Standard Validation System (SHAVS)`.
+These test cases are imported from:
+
+- `Cryptographic Standards and Guidelines`_
+- `NESSIE test vectors`_
+- `Secure Hash Standard Validation System (SHAVS)`
 
 
 Loading the unit test CM file, some test cases would be executed:
