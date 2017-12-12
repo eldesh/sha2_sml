@@ -10,6 +10,11 @@ sig
   val toString : Word.word t -> string
 
   (**
+   * extract word vector
+   *)
+  val toVector : Word.word t -> Word.word vector
+
+  (**
    * Read a value of type word t from HEX string
    *)
   val fromHexString : string -> Word.word t option
