@@ -20,8 +20,8 @@ This library provides below 4 kinds of hash algorithms defined as SHA2:
 Environment
 ----------------------------------------------------------------
 
-This library had been developped with SML/NJ **110.82**, but
-recent versions should be work well.
+This library had been developped with SML/NJ **110.82**,
+but recent versions should be work well.
 
 
 Load to Interactive Environment
@@ -77,7 +77,7 @@ These test cases are imported from:
 
 - `Cryptographic Standards and Guidelines`_
 - `NESSIE test vectors`_
-- `Secure Hash Standard Validation System (SHAVS)`
+- `Secure Hash Standard Validation System (SHAVS)`_
 
 .. Note:: Not all cases are executed as unit test.
 
