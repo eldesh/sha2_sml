@@ -330,6 +330,16 @@ struct
        , test_sha512()
       ])
 
+  (**
+   * NESSIE test vectors
+   * https://www.cosic.esat.kuleuven.be/nessie/testvectors/hash/sha/
+   *
+   * # Fetch
+   * $ base_url=https://www.cosic.esat.kuleuven.be/nessie/testvectors/hash/sha
+   * $ for bit in 256 384 512;do
+   *     curl -s -O ${base_url}/Sha-2-${bit}.unverified.test-vectors
+   *   don
+   *)
   fun test_nessie_test_vectors () =
     $("nessie_test_vectors",
       &[ test_nessie_256()
@@ -446,6 +456,10 @@ struct
 
   (** https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
    * test vectors from Secure Hash Standard Validation System (SHAVS)
+   *
+   * # Fetch
+   * $ curl -L -O https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/shs/shabytetestvectors.zip
+   * $ unzip shabytetestvectors.zip
    *)
   fun test_cavp_test_vectors () =
     $("cavp_test_vectors",
