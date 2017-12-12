@@ -28,6 +28,9 @@ in
   open Sha2Type
   structure Word = F.Word
 
+  fun toVector (Hash(w0,w1,w2,w3,w4,w5,w6,w7)) =
+    vector [w0,w1,w2,w3,w4,w5,w6,w7]
+
   (** NOTE: SML cannot resolve overloading on op+ for F.Word.word type *)
   val op+ = F.Word.+
 

@@ -21,6 +21,9 @@ local
       let fun tos w = StringCvt.padLeft #"0" (2 * 4) (Word.toString w)
       in concat (map tos [h0,h1,h2,h3,h4,h5,h6]) end
 
+    fun toVector (Hash(w0,w1,w2,w3,w4,w5,w6)) =
+      vector [w0,w1,w2,w3,w4,w5,w6]
+
     structure SS = Substring
     fun fromHexString str =
       let
