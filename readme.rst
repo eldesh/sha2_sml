@@ -70,7 +70,7 @@ When above steps have completed, Sha2SML can be used from anywhere in your envir
 
 
 Test
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+----------------------------------------------------------------
 
 This project containts a unit test module provides many test cases.
 These test cases are imported from:
@@ -79,6 +79,11 @@ These test cases are imported from:
 - `NESSIE test vectors`_
 - `Secure Hash Standard Validation System (SHAVS)`
 
+.. Note:: Not all cases are executed as unit test.
+
+
+Execute Unit Test
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Loading the unit test CM file, some test cases would be executed:
 
