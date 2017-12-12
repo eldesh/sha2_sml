@@ -5,14 +5,14 @@ sig
   eqtype 'a t
 
   (**
-   * stringify value of 'a t
+   * stringify value of word t
    *)
   val toString : Word.word t -> string
 
   (**
-   * Read a value of type 'a t from a word stream
+   * Read a value of type word t from HEX string
    *)
-  val fromString : string -> Word.word t option
+  val fromHexString : string -> Word.word t option
 
   (**
    * Hash a word stream then return it with the rest of the stream

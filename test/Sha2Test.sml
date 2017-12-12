@@ -6,7 +6,7 @@ struct
   val ($,%,&,?) = let open Test in (TestLabel, TestCase, TestList, assert) end
 
   local
-    val ` = valOf o Sha224.fromString
+    val ` = valOf o Sha224.fromHexString
     val hash = Sha224.hashString
     val assert = assertEqual op= Sha224.toString
   in
@@ -21,7 +21,7 @@ struct
 
   local
     open Sha256
-    val ` = valOf o fromString
+    val ` = valOf o fromHexString
     val hash = hashString
     val assert = assertEqual op= toString
     infix ==> =-=>
@@ -116,7 +116,7 @@ struct
 
   local
     open Sha384
-    val ` = valOf o fromString
+    val ` = valOf o fromHexString
     val hash = hashString
     val assert = assertEqual op= toString
     infix ==> =-=>
@@ -204,7 +204,7 @@ struct
 
   local
     open Sha512
-    val ` = valOf o fromString
+    val ` = valOf o fromHexString
     val hash = hashString
     val assert = assertEqual op= toString
     infix ==> =-=>
@@ -291,7 +291,7 @@ struct
   end
 
   local
-    val ` = valOf o Sha384.fromString
+    val ` = valOf o Sha384.fromHexString
     val hash = Sha384.hashString
     val assert = assertEqual op= Sha384.toString
   in
@@ -305,7 +305,7 @@ struct
   end
 
   local
-    val ` = valOf o Sha512.fromString
+    val ` = valOf o Sha512.fromHexString
     val hash = Sha512.hashString
     val assert = assertEqual op= Sha512.toString
   in

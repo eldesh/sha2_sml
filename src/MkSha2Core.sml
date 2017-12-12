@@ -206,7 +206,7 @@ in
   local
     structure SS = Substring
   in
-  fun fromString str =
+  fun fromHexString str =
     let
       val ss = SS.full str
       fun get ss =

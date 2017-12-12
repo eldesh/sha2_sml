@@ -22,7 +22,7 @@ local
       in concat (map tos [h0,h1,h2,h3,h4,h5]) end
 
     structure SS = Substring
-    fun fromString str =
+    fun fromHexString str =
       let
         val ss = SS.full str
         fun get ss =
