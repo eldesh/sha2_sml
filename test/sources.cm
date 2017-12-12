@@ -3,5 +3,6 @@ is
   $/basis-2004.cm
   $/smlunitlib.cm
   ../src/sources.cm
+  CAVPParser.sml
   Sha2Test.sml
   runtest.sml

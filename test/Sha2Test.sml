@@ -5,6 +5,8 @@ struct
   open Assert
   val ($,%,&,?) = let open Test in (TestLabel, TestCase, TestList, assert) end
 
+  structure CAVP = CAVPParser
+
   local
     val ` = valOf o Sha224.fromHexString
     val hash = Sha224.hashString
@@ -321,7 +323,7 @@ struct
   (** https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
    *)
   fun test_example_values () =
-    $("test_example_values",
+    $("example_values",
       &[ test_sha224()
        , test_sha256()
        , test_sha384()
@@ -335,12 +337,114 @@ struct
        , test_nessie_512()
       ])
 
+  local
+    structure SS = Substring
+    datatype length = Short | Long
+    fun lengthToString Short = "Short"
+      | lengthToString Long = "Long"
+  in
+  fun getWord8 ss =
+    let
+      val w = SOME(SS.splitAt (ss, 2)) handle Subscript => NONE
+    in
+      Option.mapPartial
+        (fn(w,ws)=> Option.map
+                      (fn w=> (w,ws))
+                      (Word8.fromString (SS.string w)))
+        w
+    end
+
+  fun test_cavp_sha224_msg length =
+    let
+      val assert = assertEqual op= Sha224.toString
+      val SOME(cases,[]) =
+        CAVP.parse ("test/shabytetestvectors/SHA224"^(lengthToString length)^"Msg.rsp")
+    in
+      $("cavp_sha224_" ^ lengthToString length ^ "_msg",
+        &(map
+            (fn (msg,md) =>
+               %(fn()=> assert (valOf (Sha224.fromHexString md))
+                               (Sha224.hashStream' getWord8 (SS.full msg))))
+            cases))
+    end
+
+  fun test_cavp_sha256_msg length =
+    let
+      val assert = assertEqual op= Sha256.toString
+      val SOME(cases,[]) =
+        CAVP.parse ("test/shabytetestvectors/SHA256"^(lengthToString length)^"Msg.rsp")
+    in
+      $("cavp_sha256_" ^ lengthToString length ^ "_msg",
+        &(map
+            (fn (msg,md) =>
+               %(fn()=> assert (valOf (Sha256.fromHexString md))
+                               (Sha256.hashStream' getWord8 (SS.full msg))))
+            cases))
+    end
+
+  fun test_cavp_sha384_msg length =
+    let
+      val assert = assertEqual op= Sha384.toString
+      val SOME(cases,[]) =
+        CAVP.parse ("test/shabytetestvectors/SHA384"^(lengthToString length)^"Msg.rsp")
+    in
+      $("cavp_sha384_" ^ lengthToString length ^ "_msg",
+        &(map
+            (fn (msg,md) =>
+               %(fn()=> assert (valOf (Sha384.fromHexString md))
+                               (Sha384.hashStream' getWord8 (SS.full msg))))
+            cases))
+    end
+
+  fun test_cavp_sha512_msg length =
+    let
+      val assert = assertEqual op= Sha512.toString
+      val SOME(cases,[]) =
+        CAVP.parse ("test/shabytetestvectors/SHA512"^(lengthToString length)^"Msg.rsp")
+    in
+      $("cavp_sha512_" ^ lengthToString length ^ "_msg",
+        &(map
+            (fn (msg,md) =>
+               %(fn()=> assert (valOf (Sha512.fromHexString md))
+                               (Sha512.hashStream' getWord8 (SS.full msg))))
+            cases))
+    end
+
+  fun test_cavp_sha224 () =
+    $("cavp_sha224",
+      &[ test_cavp_sha224_msg Short
+       , test_cavp_sha224_msg Long
+      ])
+
+  fun test_cavp_sha256 () =
+    $("cavp_sha256",
+      &[ test_cavp_sha256_msg Short
+       , test_cavp_sha256_msg Long
+      ])
+
+  fun test_cavp_sha384 () =
+    $("cavp_sha384",
+      &[ test_cavp_sha384_msg Short
+       , test_cavp_sha384_msg Long
+      ])
+
+  fun test_cavp_sha512 () =
+    $("cavp_sha512",
+      &[ test_cavp_sha512_msg Short
+       , test_cavp_sha512_msg Long
+      ])
+
+  end (* local *)
+
   (** https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
    * test vectors from Secure Hash Standard Validation System (SHAVS)
    *)
   fun test_cavp_test_vectors () =
     $("cavp_test_vectors",
-      &[
+      &[ test_cavp_sha224 ()
+       , test_cavp_sha256 ()
+       , test_cavp_sha384 ()
+       , test_cavp_sha512 ()
       ])
 
   fun test () =
