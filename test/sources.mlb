@@ -1,0 +1,7 @@
+$(SML_LIB)/basis/basis.mlb
+$(SMLUNIT_LIB)/smlunitlib.mlb
+../src/sources.mlb
+Parser.sml
+CAVPParser.sml
+Sha2Test.sml
+runtest.sml
