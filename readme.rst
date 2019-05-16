@@ -1,4 +1,5 @@
 
+================================================================
 Sha2SML
 ================================================================
 
@@ -7,7 +8,7 @@ a SHA2 algorithm implementation of StandardML.
 SHA2 is defined in rfc6234_.
 
 Feature
-----------------------------------------------------------------
+================================================================
 
 This library provides below 4 kinds of hash algorithms defined as SHA2:
 
@@ -18,31 +19,16 @@ This library provides below 4 kinds of hash algorithms defined as SHA2:
 
 
 Environment
-----------------------------------------------------------------
+================================================================
 
 This library had been developped with SML/NJ **110.82**,
 but recent versions should be work well.
 
 
-Load to Interactive Environment
-----------------------------------------------------------------
-
-Sha2SML allows users to loading it in place:
-
-.. code-block:: sml
-
-    $ sml
-    - CM.make "libsha2sml.cm";
-    (* ... snip ... *)
-    val it = true : bool
-    - Sha256.hashString "";
-    val it = - : ?.Sha256.word Sha256.t
-    - Sha256.toString it;
-    val it = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-      : string
-
-
 Install
+================================================================
+
+SML/NJ
 ----------------------------------------------------------------
 
 For install **Sha2SML** as a SML library to your environment,
@@ -69,8 +55,37 @@ When above steps have completed, Sha2SML can be used from anywhere in your envir
     val it = true : bool
 
 
-Test
+Load to Interactive Environment
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Sha2SML allows users to loading it in place:
+
+.. code-block:: sml
+
+    $ sml
+    - CM.make "libsha2sml.cm";
+    (* ... snip ... *)
+    val it = true : bool
+    - Sha256.hashString "";
+    val it = - : ?.Sha256.word Sha256.t
+    - Sha256.toString it;
+    val it = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      : string
+
+
+MLton
 ----------------------------------------------------------------
+
+Add the path of the **Sha2SML** directory to mlb-map file, it enables MLton to use it as a SML library.
+
+.. code-block:: sh
+
+    $ DESTDIR=/usr/lib/mlton/mlb-path-map
+    $ echo "SHA2SML /path/to/sha2sml" >> ${DESTDIR}
+
+
+Test
+================================================================
 
 This project containts a unit test module provides many test cases.
 These test cases are imported from:
@@ -82,8 +97,8 @@ These test cases are imported from:
 .. Note:: Not all cases are executed as unit test.
 
 
-Execute Unit Test
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+SML/NJ
+----------------------------------------------------------------
 
 Loading the unit test CM file, some test cases would be executed:
 
@@ -100,6 +115,25 @@ Then you will see the result of each test case.
     Failures:
     Errors:
 
+
+MLton
+----------------------------------------------------------------
+
+Building the unit test project defined with the MLB.
+
+.. code-block:: sh
+
+    $ mlton ./test/sources.mlb
+
+Then you will see the result of each test case.
+
+.. code-block:: sh
+
+    $ ./test/sources
+    .......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+    tests = 951, failures = 0, errors = 0
+    Failures:
+    Errors:
 
 
 .. _rfc6234: https://tools.ietf.org/html/rfc6234
