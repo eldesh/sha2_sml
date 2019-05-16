@@ -1,0 +1,9 @@
+local
+  src/sources.mlb
+in
+  signature SHA2
+  structure Sha224
+  structure Sha256
+  structure Sha384
+  structure Sha512
+end
