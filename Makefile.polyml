@@ -1,0 +1,32 @@
+
+POLYML ?= poly
+POLYMLC ?= polyc
+
+SRC := $(wildcard src/*.sml)
+
+
+all: sha2_sml
+
+
+.PHONY: sha2_sml
+sha2_sml: polyml_make.sml
+	$(POLYML) -q --error-exit --use ./usesig.sml < polyml_make.sml
+
+
+sha2test-poly.o: test/export.sml $(SRC)
+	$(POLYML) -q --error-exit < test/export.sml
+
+
+sha2test-poly: sha2test-poly.o
+	$(POLYMLC) -o $@ $^
+
+
+test: sha2test-poly
+	./sha2test-poly
+
+
+PHOENY: clean
+clean:
+	$(RM) sha2test-poly
+	$(RM) sha2test-poly.o
+
