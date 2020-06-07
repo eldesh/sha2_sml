@@ -1,20 +1,30 @@
 
 POLYML ?= poly
 POLYMLC ?= polyc
+POLYMLFLAGS ?= -q --error-exit --eval 'PolyML.suffixes := ".sig"::(!PolyML.suffixes)'
 
-SRC := $(wildcard src/*.sml)
+SRC := $(wildcard src/*)
+TEST_SRC := $(wildcard test/*)
 
-
-all: sha2_sml
-
-
-.PHONY: sha2_sml
-sha2_sml: polyml_make.sml
-	$(POLYML) -q --error-exit --use ./usesig.sml < polyml_make.sml
+TARGET := libsha2sml.poly
 
 
-sha2test-poly.o: test/export.sml $(SRC)
-	$(POLYML) -q --error-exit < test/export.sml
+all: $(TARGET)
+
+
+$(TARGET): $(SRC)
+	echo "" | $(POLYML) $(POLYMLFLAGS) \
+	    --eval 'PolyML.make "src"' \
+		--use export.sml \
+		--eval 'PolyML.SaveState.saveModule ("$(TARGET)", Sha2SML)'
+
+
+sha2test-poly.o: $(TARGET) $(TEST_SRC)
+	echo "" | $(POLYML) $(POLYMLFLAGS) \
+	    --eval 'PolyML.loadModule "$(LIBSMLUNIT)"' \
+	    --eval 'PolyML.loadModule "./$(TARGET)"' \
+	    --eval 'PolyML.make "test"' \
+		--eval 'PolyML.export ("$(@:.o=)", Sha2Test.main)'
 
 
 sha2test-poly: sha2test-poly.o
@@ -27,6 +37,7 @@ test: sha2test-poly
 
 PHOENY: clean
 clean:
-	$(RM) sha2test-poly
-	$(RM) sha2test-poly.o
+	-$(RM) $(TARGET)
+	-$(RM) sha2test-poly
+	-$(RM) sha2test-poly.o
 
