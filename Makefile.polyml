@@ -31,7 +31,7 @@ endif
 	    --eval 'PolyML.loadModule "$(LIBSMLUNIT)"' \
 	    --eval 'PolyML.loadModule "./$(TARGET)"' \
 	    --eval 'PolyML.make "test"' \
-		--eval 'PolyML.export ("$(@:.o=)", Sha2Test.main)'
+		--eval 'PolyML.export ("$@", Sha2Test.main)'
 
 
 sha2test-poly: sha2test-poly.o
