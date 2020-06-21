@@ -13,7 +13,8 @@ all: $(TARGET)
 
 
 $(TARGET): $(SRC)
-	echo "" | $(POLYML) $(POLYMLFLAGS) \
+	@echo "  [POLYML] $@"
+	@echo "" | $(POLYML) $(POLYMLFLAGS) \
 	    --eval 'PolyML.make "src"' \
 		--use export.sml \
 		--eval 'PolyML.SaveState.saveModule ("$(TARGET)", Sha2SML)'
@@ -28,7 +29,8 @@ sha2test-poly.o: $(TARGET) $(TEST_SRC)
 
 
 sha2test-poly: sha2test-poly.o
-	$(POLYMLC) -o $@ $^
+	@echo "  [POLYMLC] $@"
+	@$(POLYMLC) -o $@ $^
 
 
 test: sha2test-poly
