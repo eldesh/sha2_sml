@@ -39,11 +39,12 @@ sha2test-poly: sha2test-poly.o
 	@$(POLYMLC) -o $@ $^
 
 
+.PHONY: test
 test: sha2test-poly
 	./sha2test-poly
 
 
-PHOENY: clean
+.PHONY: clean
 clean:
 	-$(RM) $(TARGET)
 	-$(RM) sha2test-poly
