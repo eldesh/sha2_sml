@@ -3,10 +3,12 @@ POLYML ?= poly
 POLYMLC ?= polyc
 POLYMLFLAGS ?= -q --error-exit --eval 'PolyML.suffixes := ".sig"::(!PolyML.suffixes)'
 
+SHA2SML_VERSION := 0.9.0
+
 SRC := $(wildcard src/*)
 TEST_SRC := $(wildcard test/*)
 
-TARGET := libsha2sml.poly
+TARGET := libsha2sml-$(SHA2SML_VERSION).poly
 
 
 all: $(TARGET)
