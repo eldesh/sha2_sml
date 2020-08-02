@@ -11,7 +11,7 @@ TEST_SRC := $(wildcard test/*)
 TARGET := libsha2sml-$(SHA2SML_VERSION).poly
 
 
-all: $(TARGET)
+all: $(TARGET) test
 
 
 $(TARGET): $(SRC)
@@ -39,6 +39,12 @@ endif
 sha2test-poly: sha2test-poly.o
 	@echo "  [POLYMLC] $@"
 	@$(POLYMLC) -o $@ $^
+
+
+.PHONY: install
+install: $(TARGET)
+	@[ -e $(PREFIX)/polyml/lib ] || mkdir $(PREFIX)/polyml/lib
+	install -D -m 644 -t $(PREFIX)/polyml/lib $(TARGET)
 
 
 .PHONY: test
