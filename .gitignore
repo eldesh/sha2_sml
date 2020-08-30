@@ -1,1 +1,6 @@
+# smlnj
 .cm/
+# polyml
+libsha2sml.poly
+sha2test-poly.o
+sha2test-poly

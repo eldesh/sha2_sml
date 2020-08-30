@@ -1,0 +1,61 @@
+
+POLYML ?= poly
+POLYMLC ?= polyc
+POLYMLFLAGS ?= -q --error-exit --eval 'PolyML.suffixes := ".sig"::(!PolyML.suffixes)'
+
+SHA2SML_VERSION := 0.9.0
+
+SRC := $(wildcard src/*)
+TEST_SRC := $(wildcard test/*)
+
+TARGET := libsha2sml-$(SHA2SML_VERSION).poly
+
+
+all: $(TARGET) test
+
+
+$(TARGET): $(SRC)
+	@echo "  [POLYML] $@"
+	@echo "" | $(POLYML) $(POLYMLFLAGS) \
+	    --eval 'PolyML.make "src"' \
+		--use export.sml \
+		--eval 'PolyML.SaveState.saveModule ("$(TARGET)", Sha2SML)'
+
+
+sha2test-poly.o: $(TARGET) $(TEST_SRC)
+	@echo "LIBSMLUNIT: $(LIBSMLUNIT)"
+ifeq ($(LIBSMLUNIT),)
+	@echo "*** Please set LIBSMLUNIT to path to libsmlunit.poly ***" >&2
+	@exit 1
+endif
+	@echo "  [POLYML] $@"
+	@echo "" | $(POLYML) $(POLYMLFLAGS) \
+	    --eval 'PolyML.loadModule "$(LIBSMLUNIT)"' \
+	    --eval 'PolyML.loadModule "./$(TARGET)"' \
+	    --eval 'PolyML.make "test"' \
+		--eval 'PolyML.export ("$@", Sha2Test.main)'
+
+
+sha2test-poly: sha2test-poly.o
+	@echo "  [POLYMLC] $@"
+	@$(POLYMLC) -o $@ $^
+
+
+.PHONY: install
+install: $(TARGET)
+	@[ -e $(PREFIX)/polyml     ] || mkdir $(PREFIX)/polyml
+	@[ -e $(PREFIX)/polyml/lib ] || mkdir $(PREFIX)/polyml/lib
+	install -D -m 644 -t $(PREFIX)/polyml/lib $(TARGET)
+
+
+.PHONY: test
+test: sha2test-poly
+	./sha2test-poly
+
+
+.PHONY: clean
+clean:
+	-$(RM) $(TARGET)
+	-$(RM) sha2test-poly
+	-$(RM) sha2test-poly.o
+
