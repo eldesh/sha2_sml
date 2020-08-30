@@ -43,6 +43,7 @@ sha2test-poly: sha2test-poly.o
 
 .PHONY: install
 install: $(TARGET)
+	@[ -e $(PREFIX)/polyml     ] || mkdir $(PREFIX)/polyml
 	@[ -e $(PREFIX)/polyml/lib ] || mkdir $(PREFIX)/polyml/lib
 	install -D -m 644 -t $(PREFIX)/polyml/lib $(TARGET)
 
