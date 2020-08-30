@@ -87,11 +87,27 @@ Add the path of the **Sha2SML** directory to mlb-map file, it enables MLton to u
 Poly/ML
 ----------------------------------------------------------------
 
-Compile the module and copy it to the desired path.
+Compile the module with default target.
 
 .. code-block:: sh
 
     $ make -f Makefile.polyml
+
+
+The default target generates `libsha2sml-x.y.z.poly` in this directory.
+To install this library, use `install` target:
+
+.. code-block:: sh
+
+    $ make -f Makefile.polyml install
+
+
+To change the installation directory, specify `PREFIX` variable like:
+
+.. code-block:: sh
+
+    $ make -f Makefile.polyml PREFIX=~/.sml install
+
 
 
 Load to Interactive Environment
