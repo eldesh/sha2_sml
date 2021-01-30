@@ -1,7 +1,7 @@
 group
 is
   $/basis-2004.cm
-  $/smlunitlib.cm
+  $/smlunit-lib.cm
   ../src/sources.cm
   Parser.sml
   CAVPParser.sml

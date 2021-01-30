@@ -156,7 +156,7 @@ Then you will see the result of each test case.
 .. code-block:: sh
 
     ...................................................................................................................................................................................
-    tests = 179, failures = 0, errors = 0
+    tests = 951, failures = 0, errors = 0
     Failures:
     Errors:
 

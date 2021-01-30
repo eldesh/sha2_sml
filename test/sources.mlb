@@ -1,5 +1,5 @@
 $(SML_LIB)/basis/basis.mlb
-$(SMLUNIT_LIB)/smlunitlib.mlb
+$(SMLUNIT_LIB)/smlunit-lib.mlb
 ../src/sources.mlb
 Parser.sml
 CAVPParser.sml
