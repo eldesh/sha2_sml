@@ -476,9 +476,13 @@ struct
        , test_cavp_test_vectors()
       ])
 
-  fun main () =
+  fun main (_, _) =
     (TextUITestRunner.runTest {output=TextIO.stdOut} (test());
-     TextIO.flushOut TextIO.stdOut
+     TextIO.flushOut TextIO.stdOut;
+     OS.Process.success
      )
-end
 
+  fun main' () =
+    ignore (main (CommandLine.name(), CommandLine.arguments()))
+
+end
