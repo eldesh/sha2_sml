@@ -1,14 +1,14 @@
 
-POLYML ?= poly
-POLYMLC ?= polyc
-POLYMLFLAGS ?= -q --error-exit --eval 'PolyML.suffixes := ".sig"::(!PolyML.suffixes)'
+POLYML          ?= poly
+POLYMLC         ?= polyc
+POLYMLFLAGS     ?= -q --error-exit --eval 'PolyML.suffixes := ".sig"::(!PolyML.suffixes)'
 
 SHA2SML_VERSION := 0.9.0
 
-SRC := $(wildcard src/*)
-TEST_SRC := $(wildcard test/*)
+SRC             := $(wildcard src/*)
+TEST_SRC        := $(wildcard test/*)
 
-TARGET := libsha2sml-$(SHA2SML_VERSION).poly
+TARGET          := libsha2sml-$(SHA2SML_VERSION).poly
 
 
 all: $(TARGET) test
@@ -43,8 +43,7 @@ sha2test-poly: sha2test-poly.o
 
 .PHONY: install
 install: $(TARGET)
-	@[ -e $(PREFIX)/polyml     ] || mkdir $(PREFIX)/polyml
-	@[ -e $(PREFIX)/polyml/lib ] || mkdir $(PREFIX)/polyml/lib
+	@install -d $(PREFIX)/polyml/lib
 	install -D -m 644 -t $(PREFIX)/polyml/lib $(TARGET)
 
 
@@ -58,4 +57,3 @@ clean:
 	-$(RM) $(TARGET)
 	-$(RM) sha2test-poly
 	-$(RM) sha2test-poly.o
-
