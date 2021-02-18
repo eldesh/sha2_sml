@@ -31,20 +31,37 @@ Install
 SML/NJ
 ----------------------------------------------------------------
 
-For install **Sha2SML** as a SML library to your environment,
-stabilize build then copy the produced binaries.
+To install **Sha2SML** to your environment, you need to perform the :code:`install` target of Makefile.smlnj.
 
 .. code-block:: sh
 
-    $ DESTDIR=${HOME}/.smlnj/lib
-    $ echo 'CM.stabilize true "libsha2sml.cm";' | sml
-    (* ... snip ... *)
-    val it = true : bool
-    $ echo "libsha2sml.cm ${DESTDIR}/libsha2sml.cm" >> ~/.smlnj-pathconfig
-    $ mkdir -p ${DESTDIR}/libsha2sml.cm
-    $ cp -R .cm ${DESTDIR}/libsha2sml.cm/.cm
+   $ make -f Makefile.smlnj install
 
-When above steps have completed, Sha2SML can be used from anywhere in your environment:
+
+Or you can specify install directory with PREFIX like below
+
+.. code-block:: sh
+
+    $ make -f Makefile.smlnj install PREFIX=~/.sml/smlnj
+
+
+The :code:`install` target requires `SMLDoc`_ to generates documentations.
+To install library without documentations, use :code:`install-nodoc` target.
+
+
+.. code-block:: sh
+
+    $ make -f Makefile.smlnj install-nodoc
+
+
+To complete the installation, add an entry to the *PATHCONFIG* file.
+
+.. code-block:: sh
+
+    $ echo "libsha2sml .sml/smlnj/lib/libsha2sml" >> ~/.smlnj-pathconfig
+
+
+Once the above steps are completed, Sha2SML can be used from anywhere in your environment:
 
 .. code-block:: sml
 
@@ -207,3 +224,4 @@ Building and executing the unit test project with Make.
 .. _`NESSIE test vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/hash/sha/
 .. _`Secure Hash Standard Validation System (SHAVS)`: https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs
 
+.. _`SMLDoc`: https://www.pllab.riec.tohoku.ac.jp/smlsharp//?SMLDoc
