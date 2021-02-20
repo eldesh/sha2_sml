@@ -3,15 +3,30 @@ POLYML          ?= poly
 POLYMLC         ?= polyc
 POLYMLFLAGS     ?= -q --error-exit --eval 'PolyML.suffixes := ".sig"::(!PolyML.suffixes)'
 
+SMLDOC          ?= smldoc
+
 SHA2SML_VERSION := 0.9.0
+
+PREFIX          := /usr/local/polyml
+LIBDIR          ?= lib
+DOCDIR          ?= doc
 
 SRC             := $(wildcard src/*)
 TEST_SRC        := $(wildcard test/*)
+LIBSMLUNIT      := $(PREFIX)/$(LIBDIR)/SMLUnit/libsmlunit.poly
 
 TARGET          := libsha2sml-$(SHA2SML_VERSION).poly
 
 
-all: $(TARGET) test
+all: libsha2sml-nodoc
+
+
+.PHONY: libsha2sml-nodoc
+libsha2sml-nodoc: $(TARGET)
+
+
+.PHONY: libsha2sml
+libsha2sml: libsha2sml-nodoc doc
 
 
 $(TARGET): $(SRC)
@@ -19,21 +34,16 @@ $(TARGET): $(SRC)
 	@echo "" | $(POLYML) $(POLYMLFLAGS) \
 	    --eval 'PolyML.make "src"' \
 		--use export.sml \
-		--eval 'PolyML.SaveState.saveModule ("$(TARGET)", Sha2SML)'
+		--eval 'PolyML.SaveState.saveModule ("$(TARGET)", Sha2SML)' >/dev/null
 
 
-sha2test-poly.o: $(TARGET) $(TEST_SRC)
-	@echo "LIBSMLUNIT: $(LIBSMLUNIT)"
-ifeq ($(LIBSMLUNIT),)
-	@echo "*** Please set LIBSMLUNIT to path to libsmlunit.poly ***" >&2
-	@exit 1
-endif
+sha2test-poly.o: $(TARGET) $(TEST_SRC) $(LIBSMLUNIT)
 	@echo "  [POLYML] $@"
 	@echo "" | $(POLYML) $(POLYMLFLAGS) \
 	    --eval 'PolyML.loadModule "$(LIBSMLUNIT)"' \
 	    --eval 'PolyML.loadModule "./$(TARGET)"' \
 	    --eval 'PolyML.make "test"' \
-		--eval 'PolyML.export ("$@", Sha2Test.main'"'"')'
+		--eval 'PolyML.export ("$@", Sha2Test.main'"'"')' >/dev/null
 
 
 sha2test-poly: sha2test-poly.o
@@ -41,19 +51,54 @@ sha2test-poly: sha2test-poly.o
 	@$(POLYMLC) -o $@ $^
 
 
-.PHONY: install
-install: $(TARGET)
-	@install -d $(PREFIX)/polyml/lib
-	install -D -m 644 -t $(PREFIX)/polyml/lib $(TARGET)
-
-
 .PHONY: test
 test: sha2test-poly
 	./sha2test-poly
 
 
+.PHONY: install-nodoc
+install-nodoc: libsha2sml-nodoc
+	@install -d $(PREFIX)/$(LIBDIR)/libsha2sml
+	@install -D -m 644 -t $(PREFIX)/$(LIBDIR)/libsha2sml $(TARGET)
+
+
+.PHONY: install
+install: install-nodoc install-doc
+
+
+.PHONY: doc
+doc:
+	@echo "  [SMLDoc] $@"
+	@$(RM) -r doc
+	@mkdir doc
+	@$(SMLDOC) -c UTF-8 \
+		--builtinstructure=Word8 \
+		--builtinstructure=Word32 \
+		--builtinstructure=Word64 \
+		--builtinstructure=BinIO \
+		--builtinstructure=TextIO \
+		--builtinstructure=VectorSlice \
+		--builtinstructure=StringCvt \
+		--hidebysig \
+		--recursive \
+		--linksource \
+		-d doc \
+		libsha2sml.cm
+
+
+.PHONY: install-doc
+install-doc: doc
+	@install -d $(PREFIX)/$(DOCDIR)/libsha2sml
+	@cp -prT doc $(PREFIX)/$(DOCDIR)/libsha2sml
+	@echo "================================================================"
+	@echo "Generated API Documents of Sha2SML"
+	@echo "\t$(PREFIX)/$(DOCDIR)/libsha2sml"
+	@echo "================================================================"
+
+
 .PHONY: clean
 clean:
 	-$(RM) $(TARGET)
+	-$(RM) -r doc
 	-$(RM) sha2test-poly
 	-$(RM) sha2test-poly.o
