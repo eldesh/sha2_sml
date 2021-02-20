@@ -1,0 +1,110 @@
+
+MLTON          ?= mlton
+MLTON_FLAGS    ?= -default-ann "nonexhaustiveMatch ignore"
+ifneq ($(MLB_PATH_MAP),)
+MLTON_FLAGS    += -mlb-path-map $(MLB_PATH_MAP)
+endif
+
+SMLDOC         ?= smldoc
+
+PREFIX         ?= /usr/local/mlton
+LIBDIR         ?= lib/libsha2sml
+DOCDIR         ?= doc/libsha2sml
+
+LIBSHA2SML_MLB      ?= libsha2sml.mlb
+LIBSHA2SML_TEST_MLB ?= test/sources.mlb
+LIBSHA2SML_MLBS     ?= $(LIBSHA2SML_MLB)      \
+                       $(LIBSHA2SML_TEST_MLB)
+
+
+all: libsha2sml-nodoc
+
+
+.PHONY: libsha2sml-nodoc
+libsha2sml-nodoc: typecheck_sha2sml
+
+
+.PHONY: libsha2sml
+libsha2sml: libsha2sml-nodoc doc
+
+
+.PHONY: typecheck_sha2sml
+typecheck_sha2sml: $(LIBSHA2SML_MLB)
+	@echo "  [MLTON] typecheck $<"
+	@$(MLTON) $(MLTON_FLAGS) -stop tc $<
+
+
+$(LIBSHA2SML_TEST_MLB:.mlb=): %: %.mlb
+	@echo "  [MLTON] $@"
+	@$(MLTON) $(MLTON_FLAGS) -output $@ $<
+
+
+%.mlb.d: %.mlb
+	@echo "  [GEN] $@"
+	@$(SHELL) -ec '$(MLTON) $(MLTON_FLAGS) -stop f $< \
+		| sed -e "1i$(<:.mlb=) $@:\\\\" -e "s|.*|  & \\\\|" -e "\$$s| \\\\||" > $@; \
+		[ -s $@ ] || rm -rf $@'
+
+
+.PHONY: test
+test: typecheck_sha2sml $(LIBSHA2SML_TEST_MLB:.mlb=)
+	$(LIBSHA2SML_TEST_MLB:.mlb=)
+
+
+ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+  include $(LIBSHA2SML_MLBS:.mlb=.mlb.d)
+endif
+
+
+.PHONY: install-nodoc
+install-nodoc: libsha2sml-nodoc
+	@install -d $(PREFIX)/$(LIBDIR)
+	@$(MLTON) $(MLTON_FLAGS) -stop f $(LIBSHA2SML_MLB) | \
+	while read file; do \
+		if expr $$(readlink -f $$file) : ^$$(pwd) >/dev/null; then \
+			cp --parents $$(realpath --relative-to=$$(pwd) $$file) $(PREFIX)/$(LIBDIR); \
+			echo -n . ; \
+		fi; \
+	done
+	@echo "Installation has been completed."
+	@echo "Please add the entry to your mlb path map file:"
+	@echo ""
+	@echo "  SHA2SML $(PREFIX)/$(LIBDIR)"
+	@echo ""
+
+
+.PHONY: install
+install: install-nodoc install-doc
+
+
+.PHONY: doc
+doc:
+	@echo "  [SMLDoc] $@"
+	@$(RM) -r doc
+	@mkdir doc
+	@$(SMLDOC) -c UTF-8 \
+		--builtinstructure=Word8 \
+		--builtinstructure=TextIO \
+		--builtinstructure=VectorSlice \
+		--hidebysig \
+		--recursive \
+		--linksource \
+		-d doc \
+		libsha2sml.cm
+
+
+.PHONY: install-doc
+install-doc: doc
+	@install -d $(PREFIX)/$(DOCDIR)
+	@cp -prT doc $(PREFIX)/$(DOCDIR)
+	@echo "================================================================"
+	@echo "Generated API Documents of Sha2SML"
+	@echo "\t$(PREFIX)/$(DOCDIR)"
+	@echo "================================================================"
+
+
+.PHONY: clean
+clean:
+	-$(RM) $(LIBSHA2SML_MLBS:.mlb=)
+	-$(RM) $(LIBSHA2SML_MLBS:.mlb=.mlb.d)
+	-$(RM) -r doc
