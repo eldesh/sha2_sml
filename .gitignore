@@ -2,6 +2,10 @@
 .cm/
 libsha2sml.d
 test/sources.d
+# mlton
+libsha2sml.mlb.d
+test/sources.mlb.d
+test/sources
 # polyml
 libsha2sml.poly
 sha2test-poly.o
