@@ -1,0 +1,132 @@
+
+SML             ?= sml
+# -32 or -64
+# empty is default
+SML_BITMODE     ?=
+SML_FLAGS       ?=
+HEAP_SUFFIX     ?= $(shell $(SML) $(SML_BITMODE) @SMLsuffix)
+
+SMLDOC          ?= smldoc
+
+MLBUILD         ?= ml-build
+MLBUILD_FLAGS   ?=
+
+MLDEPENDS       ?= ml-makedepend
+MLDEPENDS_FLAGS ?= -n
+
+SML_DULIST      ?=
+
+PREFIX          ?= /usr/local/sml
+LIBDIR          ?= lib/libsha2sml.cm
+DOCDIR          ?= doc/libsha2sml
+
+DEPENDS         := libsha2sml.d test/sources.d
+
+TEST_TARGET     ?= bin/Sha2Test.$(HEAP_SUFFIX)
+
+
+all: libsha2sml-nodoc
+
+
+.PHONY: libsha2sml-nodoc
+libsha2sml-nodoc: .cm/$(HEAP_SUFFIX)
+
+
+.PHONY: libsha2sml
+libsha2sml: .cm/$(HEAP_SUFFIX) doc
+
+
+.cm/$(HEAP_SUFFIX): libsha2sml.d libsha2sml.cm
+	@echo "  [SMLNJ] $@"
+	@echo 'CM.stabilize true "libsha2sml.cm";' | $(SML) $(SML_BITMODE) $(SML_DULIST)
+
+
+$(DEPENDS): %.d: %.cm
+	@echo "  [GEN] $@"
+	@touch $@
+	$(MLDEPENDS) $(MLDEPENDS_FLAGS) $(SML_BITMODE) $(SML_DULIST) -f $@ $< $(dir $<).cm/$(HEAP_SUFFIX)
+	@sed -i -e "s|^\([^#][^:]\+\):|\1 $@:|" $@
+
+
+ifeq (,$(findstring $(MAKECMDGOALS),clean))
+  include libsha2sml.d
+endif
+
+
+ifeq ($(MAKECMDGOALS),test)
+  include test/sources.d
+endif
+
+
+.PHONY: install-nodoc
+install-nodoc: libsha2sml-nodoc
+	@install -d $(PREFIX)/$(LIBDIR)
+	@cp -R .cm $(PREFIX)/$(LIBDIR)/
+	@echo "================================================================"
+	@echo "libsha2sml has been installed to:"
+	@echo "\t$(PREFIX)/$(LIBDIR)"
+	@echo "Add an entry to your pathconfig (e.g. ~/.smlnj-pathconfig) such like:"
+	@echo "\tlibsha2sml.cm $(PREFIX)/libsha2sml.cm"
+	@echo "Then you can load the library like"
+	@echo "\t\"CM.make \"$$/libsha2sml.cm\";\"."
+	@echo "================================================================"
+
+
+.PHONY: install
+install: install-nodoc install-doc
+
+
+.PHONY: doc
+doc:
+	@echo "  [SMLDoc] $@"
+	@$(RM) -r doc
+	@mkdir doc
+	@$(SMLDOC) -c UTF-8 \
+		--builtinstructure=Word \
+		--builtinstructure=Word8 \
+		--builtinstructure=Word32 \
+		--builtinstructure=Word64 \
+		--builtinstructure=BinIO \
+		--builtinstructure=TextIO \
+		--builtinstructure=VectorSlice \
+		--builtinstructure=StringCvt \
+		--hidebysig \
+		--recursive \
+		--linksource \
+		-d doc \
+		libsha2sml.cm
+
+
+.PHONY: install-doc
+install-doc: doc
+	@install -d $(PREFIX)/$(DOCDIR)
+	@cp -prT doc $(PREFIX)/$(DOCDIR)
+	@echo "================================================================"
+	@echo "Generated API Documents of Sha2SML"
+	@echo "\t$(PREFIX)/$(DOCDIR)"
+	@echo "================================================================"
+
+
+$(TEST_TARGET): libsha2sml-nodoc test/sources.cm
+	@mkdir -p bin
+	$(MLBUILD) $(SML_BITMODE) $(SML_DULIST) $(MLBUILD_FLAGS) test/sources.cm Sha2Test.main $@
+
+
+.PHONY: test
+test: $(TEST_TARGET)
+	@$(SML) $(SML_BITMODE) $(SML_DULIST) $(SML_FLAGS) @SMLload=$<
+
+
+.PHONY: test-ignored
+test-ignored: $(TEST_TARGET)
+	@$(SML) $(SML_BITMODE) $(SML_DULIST) $(SML_FLAGS) @SMLload=$< --ignored
+
+
+.PHONY: clean
+clean:
+	-$(RM) $(DEPENDS)
+	-$(RM) -r doc
+	-$(RM) $(TEST_TARGET)
+	-$(RM) -r .cm
+	-$(RM) -r src/.cm
+	-$(RM) -r test/.cm

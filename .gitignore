@@ -1,5 +1,7 @@
 # smlnj
 .cm/
+libsha2sml.d
+test/sources.d
 # polyml
 libsha2sml.poly
 sha2test-poly.o
