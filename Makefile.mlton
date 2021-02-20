@@ -1,15 +1,18 @@
 
 MLTON          ?= mlton
 MLTON_FLAGS    ?= -default-ann "nonexhaustiveMatch ignore"
-ifneq ($(MLB_PATH_MAP),)
-MLTON_FLAGS    += -mlb-path-map $(MLB_PATH_MAP)
-endif
 
 SMLDOC         ?= smldoc
 
 PREFIX         ?= /usr/local/mlton
 LIBDIR         ?= lib/libsha2sml
 DOCDIR         ?= doc/libsha2sml
+
+ifneq ($(MLB_PATH_MAP),)
+MLTON_FLAGS    += -mlb-path-map $(MLB_PATH_MAP)
+else
+MLTON_FLAGS    += -mlb-path-map $(PREFIX)/mlb-path-map
+endif
 
 LIBSHA2SML_MLB      ?= libsha2sml.mlb
 LIBSHA2SML_TEST_MLB ?= test/sources.mlb
