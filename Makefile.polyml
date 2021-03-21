@@ -8,12 +8,12 @@ SMLDOC          ?= smldoc
 SHA2SML_VERSION := 0.9.0
 
 PREFIX          := /usr/local/polyml
-LIBDIR          := lib
+LIBDIR          := lib/libsha2sml
 DOCDIR          := doc/libsha2sml
 
 SRC             := $(wildcard src/*)
 TEST_SRC        := $(wildcard test/*)
-LIBSMLUNIT      := $(PREFIX)/$(LIBDIR)/SMLUnit/libsmlunit.poly
+LIBSMLUNIT      := $(PREFIX)/lib/SMLUnit/libsmlunit.poly
 
 TARGET          := libsha2sml-$(SHA2SML_VERSION).poly
 
@@ -58,12 +58,15 @@ test: sha2test-poly
 
 .PHONY: install-nodoc
 install-nodoc: libsha2sml-nodoc
-	@install -d $(PREFIX)/$(LIBDIR)/libsha2sml
-	@install -D -m 644 -t $(PREFIX)/$(LIBDIR)/libsha2sml $(TARGET)
+	@install -D -m 644 -t $(PREFIX)/$(LIBDIR) $(TARGET)
+	@echo "================================================================"
+	@echo "libsha2sml has been installed to:"
+	@echo "\t$(PREFIX)/$(LIBDIR)/$(TARGET)"
+	@echo "================================================================"
 
 
 .PHONY: install
-install: install-nodoc install-doc
+install: install-doc install-nodoc
 
 
 .PHONY: doc
