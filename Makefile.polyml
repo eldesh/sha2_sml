@@ -13,7 +13,11 @@ DOCDIR          := doc/libsha2sml
 
 SRC             := $(wildcard src/*)
 TEST_SRC        := $(wildcard test/*)
-LIBSMLUNIT      := $(PREFIX)/lib/SMLUnit/libsmlunit.poly
+
+# Path to the directory which contains the binary module of [SMLUnit] like:
+# > make -f Makefile.polyml POLYML_LIBDIR=~/.sml/polyml/5.8.1/lib
+POLYML_LIBDIR   := SPECIFY_THE_POLYML_LIBDIR
+LIBSMLUNIT      := $(POLYML_LIBDIR)/smlunit-lib/smlunit-lib.poly
 
 TARGET          := libsha2sml-$(SHA2SML_VERSION).poly
 
