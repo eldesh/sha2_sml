@@ -127,27 +127,26 @@ To complete the installation, add an entry to the *mlb-path-map* file as follows
 Poly/ML
 ----------------------------------------------------------------
 
-Compile the module with default target.
-
-.. code-block:: sh
-
-    $ make -f Makefile.polyml
-
-
-The default target generates `libsha2sml-x.y.z.poly` in this directory.
-To install this library, use `install` target:
+To build this library for Poly/ML, run the target :code:`libsha2sml` of Makefile.polyml.
 
 .. code-block:: sh
 
     $ make -f Makefile.polyml install
 
 
-To change the installation directory, specify `PREFIX` variable like:
+Or you can specify install directory with PREFIX like below
 
 .. code-block:: sh
 
-    $ make -f Makefile.polyml PREFIX=~/.sml install
+    $ make -f Makefile.polyml install PREFIX=~/.sml/polyml
 
+
+The :code:`install` target requires `SMLDoc`_ to generates documentations.
+To install library without documentations, specify :code:`install-nodoc` target.
+
+.. code-block:: sh
+
+    $ make -f Makefile.polyml install-nodoc
 
 
 Load to Interactive Environment
@@ -167,6 +166,15 @@ Sha2SML allows users to loading it in place:
     val it = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855":
       string
 
+
+Doc
+================================================================
+
+To generates documentations of Sha2SML, run the `doc` target.
+
+.. code-block:: sh
+
+    $ make -f Makefile.(smlnj|mlton|polyml) doc
 
 
 Test
@@ -222,7 +230,7 @@ Building and executing the unit test project with Make.
 
 .. code-block:: sh
 
-    $ export LIBSMLUNIT=~/path/to/libsmlunit.poly
+    $ export POLYML_LIBDIR=/path/to/lib
     $ make -f Makefile.polyml test
     Making test
     Making Sha2Test
