@@ -8,8 +8,8 @@ SMLDOC          ?= smldoc
 SHA2SML_VERSION := 0.9.0
 
 PREFIX          := /usr/local/polyml
-LIBDIR          ?= lib
-DOCDIR          ?= doc
+LIBDIR          := lib
+DOCDIR          := doc/libsha2sml
 
 SRC             := $(wildcard src/*)
 TEST_SRC        := $(wildcard test/*)
@@ -68,9 +68,9 @@ install: install-nodoc install-doc
 
 .PHONY: doc
 doc:
-	@echo "  [SMLDoc] $@"
-	@$(RM) -r doc
-	@mkdir doc
+	@echo "  [SMLDoc] $(DOCDIR)"
+	@$(RM) -r $(DOCDIR)
+	@install -d $(DOCDIR)
 	@$(SMLDOC) -c UTF-8 \
 		--builtinstructure=Word8 \
 		--builtinstructure=Word32 \
@@ -82,23 +82,23 @@ doc:
 		--hidebysig \
 		--recursive \
 		--linksource \
-		-d doc \
+		-d $(DOCDIR) \
 		libsha2sml.cm
 
 
 .PHONY: install-doc
 install-doc: doc
-	@install -d $(PREFIX)/$(DOCDIR)/libsha2sml
-	@cp -prT doc $(PREFIX)/$(DOCDIR)/libsha2sml
+	@install -d $(PREFIX)/$(DOCDIR)
+	@cp -prT $(DOCDIR) $(PREFIX)/$(DOCDIR)
 	@echo "================================================================"
 	@echo "Generated API Documents of Sha2SML"
-	@echo "\t$(PREFIX)/$(DOCDIR)/libsha2sml"
+	@echo "\t$(PREFIX)/$(DOCDIR)"
 	@echo "================================================================"
 
 
 .PHONY: clean
 clean:
 	-$(RM) $(TARGET)
-	-$(RM) -r doc
+	-$(RM) -r $(DOCDIR)
 	-$(RM) sha2test-poly
 	-$(RM) sha2test-poly.o
