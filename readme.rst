@@ -31,7 +31,7 @@ Install
 SML/NJ
 ----------------------------------------------------------------
 
-To install **Sha2SML** to your environment, you need to perform the :code:`install` target of Makefile.smlnj.
+To install **Sha2SML** to your environment, run the :code:`install` target of Makefile.smlnj.
 
 .. code-block:: sh
 
@@ -93,12 +93,35 @@ Sha2SML allows users to loading it in place:
 MLton
 ----------------------------------------------------------------
 
-Add the path of the **Sha2SML** directory to mlb-map file, it enables MLton to use it as a SML library.
+To install **Sha2SML** for MLton, run the :code:`install` target of Makefile.mlton.
 
 .. code-block:: sh
 
-    $ DESTDIR=/usr/lib/mlton/mlb-path-map
-    $ echo "SHA2SML /path/to/sha2sml" >> ${DESTDIR}
+    $ make -f Makefile.mlton install
+
+
+Or you can specify install directory with PREFIX like below
+
+.. code-block:: sh
+
+    $ make -f Makefile.mlton install PREFIX=~/.sml/mlton
+
+
+The :code:`install` target requires `SMLDoc`_ to generates documentations.
+To install library without documentations, specify :code:`install-nodoc` target.
+
+.. code-block:: sh
+
+    $ make -f Makefile.mlton install-nodoc
+
+
+To complete the installation, add an entry to the *mlb-path-map* file as follows.
+
+.. code-block:: sh
+
+    $ PREFIX=... # default /usr/local/mlton
+    $ make install PREFIX=${PREFIX}
+    $ echo "SHA2SML ${PREFIX}/lib/libsha2sml" >> /path/to/mlb-path-map
 
 
 Poly/ML
@@ -162,7 +185,7 @@ These test cases are imported from:
 SML/NJ
 ----------------------------------------------------------------
 
-By executing the :code:`test` target, the unit tests will be executed and the results will be displayed.
+To run the unit tests, run the :code:`test` target.
 
 .. code-block:: sh
 
@@ -178,15 +201,12 @@ By executing the :code:`test` target, the unit tests will be executed and the re
 MLton
 ----------------------------------------------------------------
 
-Building the unit test project defined with the MLB.
+To run the unit tests, run the :code:`test` target.
 
 .. code-block:: sh
 
-    $ mlton ./test/sources.mlb
+    $ make -f Makefile.mlton test
 
-Then you will see the result of each test case.
-
-.. code-block:: sh
 
     $ ./test/sources
     .......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................

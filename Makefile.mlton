@@ -1,0 +1,124 @@
+
+MLTON               := mlton
+MLTON_FLAGS         := -default-ann "nonexhaustiveMatch ignore"
+
+# path to the file `mlb-path-map`
+ifneq ($(MLB_PATH_MAP),)
+  MLTON_FLAGS       += -mlb-path-map $(MLB_PATH_MAP)
+endif
+
+SMLDOC              := smldoc
+
+PREFIX              := /usr/local/mlton
+LIBDIR              := lib/libsha2sml
+DOCDIR              := doc/libsha2sml
+
+LIBSHA2SML_MLB      := libsha2sml.mlb
+LIBSHA2SML_TEST_MLB := test/sources.mlb
+LIBSHA2SML_MLBS     := $(LIBSHA2SML_MLB)      \
+                       $(LIBSHA2SML_TEST_MLB)
+
+DEPENDS             := $(LIBSHA2SML_MLBS:.mlb=.mlb.d)
+
+TYPECHECK_DUMMY     := bin/.libsha2sml
+
+
+all: libsha2sml
+
+
+.PHONY: libsha2sml-nodoc
+libsha2sml-nodoc: $(TYPECHECK_DUMMY)
+
+
+.PHONY: libsha2sml
+libsha2sml: libsha2sml-nodoc doc
+
+
+$(TYPECHECK_DUMMY): $(LIBSHA2SML_MLB)
+	@echo "  [MLTON] typecheck: $<"
+	@$(MLTON) $(MLTON_FLAGS) -stop tc $<
+	@touch $@
+
+
+$(LIBSHA2SML_TEST_MLB:.mlb=): %: %.mlb
+	@echo "  [MLTON] $@"
+	@$(MLTON) $(MLTON_FLAGS) -output $@ $<
+
+
+libsha2sml.mlb.d: libsha2sml.mlb
+	@echo "  [GEN] $@"
+	@$(SHELL) -ec '$(MLTON) $(MLTON_FLAGS) -stop f $< \
+		| sed -e "1i$(TYPECHECK_DUMMY) $@:\\\\" -e "s|.*|  & \\\\|" -e "\$$s| \\\\||" > $@; \
+		[ -s $@ ] || rm -rf $@'
+
+
+%.mlb.d: %.mlb
+	@echo "  [GEN] $@"
+	@$(SHELL) -ec '$(MLTON) $(MLTON_FLAGS) -stop f $< \
+		| sed -e "1i$(<:.mlb=) $@:\\\\" -e "s|.*|  & \\\\|" -e "\$$s| \\\\||" > $@; \
+		[ -s $@ ] || rm -rf $@'
+
+
+ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+  include $(DEPENDS)
+endif
+
+
+.PHONY: install-nodoc
+install-nodoc: libsha2sml-nodoc
+	@install -d $(PREFIX)/$(LIBDIR)
+	@$(MLTON) $(MLTON_FLAGS) -stop f $(LIBSHA2SML_MLB) | \
+	while read file; do \
+		if expr $$(readlink -f $$file) : ^$$(pwd) >/dev/null; then \
+			cp --parents $$(realpath --relative-to=$$(pwd) $$file) $(PREFIX)/$(LIBDIR); \
+			echo -n . ; \
+		fi; \
+	done
+	@echo "Installation has been completed."
+	@echo "Please add the entry to your mlb path map file:"
+	@echo ""
+	@echo "  SHA2SML $(PREFIX)/$(LIBDIR)"
+	@echo ""
+
+
+.PHONY: install
+install: install-doc install-nodoc
+
+
+.PHONY: doc
+doc:
+	@echo "  [SMLDoc] $(DOCDIR)"
+	@$(RM) -r $(DOCDIR)
+	@install -d $(DOCDIR)
+	@$(SMLDOC) -c UTF-8 \
+		--builtinstructure=Word8 \
+		--builtinstructure=TextIO \
+		--builtinstructure=VectorSlice \
+		--hidebysig \
+		--recursive \
+		--linksource \
+		-d $(DOCDIR) \
+		libsha2sml.cm
+
+
+.PHONY: install-doc
+install-doc: doc
+	@install -d $(PREFIX)/$(DOCDIR)
+	@cp -prT $(DOCDIR) $(PREFIX)/$(DOCDIR)
+	@echo "================================================================"
+	@echo "Generated API Documents of Sha2SML"
+	@echo "\t$(PREFIX)/$(DOCDIR)"
+	@echo "================================================================"
+
+
+.PHONY: test
+test: $(LIBSHA2SML_TEST_MLB:.mlb=)
+	$(LIBSHA2SML_TEST_MLB:.mlb=)
+
+
+.PHONY: clean
+clean:
+	-$(RM) $(TYPECHECK_DUMMY)
+	-$(RM) $(DEPENDS)
+	-$(RM) -r $(DOCDIR)
+	-$(RM) $(filter-out libsha2sml,$(LIBSHA2SML_MLBS:.mlb=))
