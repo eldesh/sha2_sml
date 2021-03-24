@@ -25,7 +25,7 @@ DEPENDS         := libsha2sml.d test/sources.d
 TEST_TARGET     ?= bin/Sha2Test.$(HEAP_SUFFIX)
 
 
-all: libsha2sml-nodoc
+all: libsha2sml
 
 
 .PHONY: libsha2sml-nodoc
