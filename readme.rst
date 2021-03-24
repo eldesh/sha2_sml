@@ -31,7 +31,7 @@ Install
 SML/NJ
 ----------------------------------------------------------------
 
-To install **Sha2SML** to your environment, you need to perform the :code:`install` target of Makefile.smlnj.
+To install **Sha2SML** to your environment, run the :code:`install` target of Makefile.smlnj.
 
 .. code-block:: sh
 
@@ -93,27 +93,34 @@ Sha2SML allows users to loading it in place:
 MLton
 ----------------------------------------------------------------
 
-To install Sha2SML for MLton, perform :code:`install` target.
+To install **Sha2SML** for MLton, run the :code:`install` target of Makefile.mlton.
 
 .. code-block:: sh
 
-    $ make install
+    $ make -f Makefile.mlton install
 
 
-This target requires `SMLDoc`_ for generating documentations.
-To install without documents, perform :code:`install-nodoc`
+Or you can specify install directory with PREFIX like below
 
 .. code-block:: sh
 
-    $ make install-nodoc
+    $ make -f Makefile.mlton install PREFIX=~/.sml/mlton
 
 
-To refer to the installed library as SHA2SML, add an entry to the mlb-path-map file as follows.
+The :code:`install` target requires `SMLDoc`_ to generates documentations.
+To install library without documentations, specify :code:`install-nodoc` target.
+
+.. code-block:: sh
+
+    $ make -f Makefile.mlton install-nodoc
+
+
+To complete the installation, add an entry to the *mlb-path-map* file as follows.
 
 .. code-block:: sh
 
     $ PREFIX=... # default /usr/local/mlton
-    $ make install PREFIX=$(PREFIX)
+    $ make install PREFIX=${PREFIX}
     $ echo "SHA2SML ${PREFIX}/lib/libsha2sml" >> /path/to/mlb-path-map
 
 
@@ -178,7 +185,7 @@ These test cases are imported from:
 SML/NJ
 ----------------------------------------------------------------
 
-By executing the :code:`test` target, the unit tests will be executed and the results will be displayed.
+To run the unit tests, run the :code:`test` target.
 
 .. code-block:: sh
 
@@ -194,7 +201,7 @@ By executing the :code:`test` target, the unit tests will be executed and the re
 MLton
 ----------------------------------------------------------------
 
-To run the unit tests, run the target.
+To run the unit tests, run the :code:`test` target.
 
 .. code-block:: sh
 
